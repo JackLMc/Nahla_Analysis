@@ -160,10 +160,6 @@ clean_merged_cell_seg <- function(df){
   df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = TRUE))
   df1 <- df.combined %>% dplyr:: select(-contains("Autofluorescence")) %>% dplyr::select(-contains("Axis")) %>% dplyr::select(-contains("..percent")) %>% dplyr:: select(-contains("Compactness"))%>% dplyr::select(-contains("Nuclei"))
   df2 <- filter(df1, Tissue.Category != "Background")
-  print("Label Subtypes")
-  df2[grep("dMMR$", df2$Slide.ID), "Type"] <- "MSI"
-  df2[grep("pMMR$", df2$Slide.ID), "Type"] <- "MSS"
-  df2[grep(".*N[ ]S[[:digit:]]{6}$", df2$Slide.ID), "Type"] <- "hiCIRC"
   df2a <- df2
   writeCsvO(df2a)
 }
