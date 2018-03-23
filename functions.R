@@ -187,7 +187,7 @@ read_bind <- function(filelist, folder){
   setwd(folder)
   lists <- lapply(files, read.csv, header = TRUE)
   combined <- do.call(rbind, lists)
-  setwd(c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC")
+  setwd(c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis")
   )
   return(combined)
   
@@ -239,12 +239,12 @@ csvtotsv <- function(bp, op){
 # Write a csv for raw data
 writeCsvD <- function(df){
   fn <- deparse(substitute(df))
-  write.csv(df, file = paste0("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Data/",fn,".csv"), row.names = F)}
+  write.csv(df, file = paste0("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Data/",fn,".csv"), row.names = F)}
 
 # Write a csv for non raw data
 writeCsvO <- function(df){
   fn <- deparse(substitute(df))
-  write.csv(df, file = paste0("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Output/",fn,".csv"), row.names = F)}
+  write.csv(df, file = paste0("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/",fn,".csv"), row.names = F)}
 
 # Function to remove the addition of X. column at the start of a dataframe
 Correct_Colnames <- function(df) {
