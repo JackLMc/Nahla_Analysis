@@ -47,3 +47,5 @@ combined_summary_df <- read.csv("Data/combined_summary_df.csv")
 # Fix discrepancies in spelling
 combined_summary_df$Tissue.Category <- fix_tissue_cat(combined_summary_df)
 combined_summary_df$Phenotype <- fix_pheno(combined_summary_df)
+
+writeCsvD(combined_summary_df)
