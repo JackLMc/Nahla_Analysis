@@ -16,7 +16,8 @@ required <- c("tidyverse",
               "randomForest",
               "devtools",
               "aplpack",
-              "Rtsne")
+              "Rtsne",
+              "data.table")
 
 for (lib in required)
 {
@@ -28,17 +29,10 @@ for (lib in required)
 }
 
 # Comparisons and Colours
-my_comparisons <- list(c("hiCIRC", "MSI"),
-                       c("hiCIRC", "MSS"),
-                       c("MSI", "MSS"))
-# ggcols <- c("hiCIRC" = "#F8766D",
-#             "MSI" = "#00BA38",
-#             "MSS" = "#619CFF")
-
-cbcols <- c("hiCIRC" = "#999999",
-            "MSI" = "#56B4E9",
-            "MSS" = "#E69F00",
-            "MSI-L" = "#009E73")
+cbcols <- c("Type1" = "#999999",
+            "Type2" = "#56B4E9",
+            "Type3" = "#E69F00",
+            "Type4" = "#009E73")
 
 # Preprocess
 ## Cell_seg_data
@@ -85,7 +79,7 @@ preprocess_cell_seg <- function(folderoffolders, targetdir, subTdir, origindir){
   setwd(subTdir)
   lists <- lapply(files, read.csv, header = TRUE)
   print("Binding together")
-  combined.df <- do.call(rbind, lists)
+  combined.df <- rbindlist(lists)
   writeCsvD(combined.df)
   setwd(origindir)
 }
@@ -134,7 +128,7 @@ preprocess_cell_seg_summary <- function(folderoffolders, targetdir, subTdir, ori
   setwd(subTdir)
   lists <- lapply(files, read.csv, header = TRUE)
   print("Binding together")
-  combined_summary_df <- do.call(rbind, lists)
+  combined_summary_df <- rbindlist(lists)
   writeCsvD(combined_summary_df)
   setwd(origindir)
 }
