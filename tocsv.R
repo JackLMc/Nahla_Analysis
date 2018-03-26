@@ -12,9 +12,12 @@ origindir <- c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_
 # Preprocess the folders, convert .txt to .csv and bind all
 preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
 
-
-Bind_them(subTdir)
-
+options(stringsAsFactors = F)
+files <- list.files(subTdir, pattern = ".csv$")
+setwd(subTdir)
+lists <- lapply(files, read.csv, header = TRUE)
+combined.df <- rbindlist(lists)
+writeCsvD(combined.df)
 setwd(origindir)
 
 # Write to allow reading
