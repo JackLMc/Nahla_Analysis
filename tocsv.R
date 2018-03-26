@@ -12,6 +12,11 @@ origindir <- c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_
 # Preprocess the folders, convert .txt to .csv and bind all
 preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
 
+
+Bind_them(subTdir)
+
+setwd(origindir)
+
 # Write to allow reading
 combined.df <- read.csv("Data/combined.df.csv")
 clean_merged_cell_seg(combined.df)
