@@ -17,7 +17,8 @@ required <- c("tidyverse",
               "devtools",
               "aplpack",
               "Rtsne",
-              "data.table")
+              "data.table",
+              "magrittr")
 
 for (lib in required)
 {
@@ -181,6 +182,37 @@ read_bind <- function(filelist, folder){
   )
   return(combined)
   
+}
+
+# Fixing discrepancies
+## Fix tissue.Category column
+fix_tissue_cat <- function(df){
+  df$Tissue.Category %<>%
+    gsub("TUMOUR", "Tumour", .) %>%
+    gsub("tumour", "Tumour", .) %>%
+    gsub("tumor", "Tumour", .)   %>% 
+    gsub("STROMA", "Stroma", .) %>%
+    gsub("stroma", "Stroma", .) %>%
+    gsub("stromal", "Stroma", .) %>%
+    gsub("Stromal", "Stroma", .) %>%
+    gsub("background", "Background", .) %>%
+    gsub("BACKGROUND", "Background", .)
+  return(df$Tissue.Category)
+}
+
+## Fix Phenotype Spellings
+fix_pheno <- function(df){
+  df$Phenotype %<>%
+    gsub("cd4", "CD4", .) %>%
+    gsub("cd68", "CD68", .) %>%
+    gsub("dapi", "DAPI", .)   %>% 
+    gsub("nuclei", "DAPI", .) %>%
+    gsub("Nuclei", "DAPI", .) %>%
+    gsub("nucleui", "DAPI", .) %>%
+    gsub("foxp3", "FOXP3", .) %>%
+    gsub("Foxp3", "FOXP3", .) %>%
+    gsub("FOXp3", "FOXP3", .)
+  return(df$Phenotype)
 }
 
 # Find diameter
