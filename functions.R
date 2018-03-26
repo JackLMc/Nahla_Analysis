@@ -160,28 +160,18 @@ clean_merged_cell_seg <- function(df){
 }
 
 # Read and bind
-read_bind <- function(filelist, folder){
-  setwd(folder)
-  i <- 1
-  
-  for (i in 1:length(filelist)) {
-    cur.input.file <- filelist[i]
-    print(cur.input.file)
-    cur.output.file <- paste0(cur.input.file, ".csv") 
-    print(cur.output.file)
-    print(paste("Working on file:", cur.input.file))
-    data <- read.delim(cur.input.file, header = T)
-    write.table(data, file = cur.output.file, sep = ",", col.names = TRUE, row.names = FALSE)}
-  # Bind all together
+Bind_them <- function(folder){
+  print("Listing files")
   options(stringsAsFactors = F)
   files <- list.files(folder, pattern = ".csv$")
   setwd(folder)
+  print("Reading files")
   lists <- lapply(files, read.csv, header = TRUE)
-  combined <- do.call(rbind, lists)
-  setwd(c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis")
-  )
-  return(combined)
-  
+  print("Binding files")
+  combined.df <- rbindlist(lists)
+  setwd(c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis"))
+  print("Writing bound file")
+  writeCsvD(combined)
 }
 
 # Fixing discrepancies
