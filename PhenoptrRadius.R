@@ -2,7 +2,7 @@
 source("Functions.R")
 
 # Search for ACW5
-base_path <- "/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only"
+base_path <- "/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Export_Fixed/Cell_seg_only"
 
 # create a dataframe with your phenotypes in
 Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
@@ -11,7 +11,9 @@ categories <- c("Tumour", "Stroma")
 radii <- c(10, 30)
 
 # Perform these to get AveCountsWithin dataframe
-## AveCountsWithin <- count_within_batch(base_path, pairs, radii, category = categories, verbose = T)
+AveCountsWithin <- count_within_batch(base_path, pairs, radii, category = categories, verbose = T)
+
+read_cell_seg_data("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Export_Fixed/Cell_seg_only/S0228449 25B 5PLEX_[45507,13296].txt")
 ## writeCsvO(AveCountsWithin)
 ACW <- read.csv("Output/AveCountsWithin.csv")
 ACW <- droplevels(subset(ACW, from != "DAPI"))
