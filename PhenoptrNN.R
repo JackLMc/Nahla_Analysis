@@ -5,14 +5,14 @@ source("Functions.R")
 
 # NEAREST NEIGHBOUR
 ## Convert old DF to a tsv file
-csvtotsv("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Output/df2a.csv",
-         "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Output/NN/DF1_tab.tsv")
+csvtotsv("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/df2a.csv",
+         "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
 
 ## Calculate distances
-NearNeigh <- compute_all_nearest_distance("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Output/NN/DF1_tab.tsv")
+NearNeigh <- compute_all_nearest_distance("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
 
 # Write a TSV or a CSV?
-# write.table(NearNeigh, file = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Output/NN/NearNeigh.tsv", row.names = F, sep = "\t")
+# write.table(NearNeigh, file = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/NearNeigh.tsv", row.names = F, sep = "\t")
 # writeCsvO(NearNeigh)
 NearNeigh <- read.csv("Output/NearNeigh.csv")
 
