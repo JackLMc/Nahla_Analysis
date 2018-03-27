@@ -11,13 +11,6 @@ origindir <- c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_
 
 # Preprocess the folders, convert .txt to .csv and bind all
 preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
-
-options(stringsAsFactors = F)
-files <- list.files(subTdir, pattern = ".csv$")
-setwd(subTdir)
-lists <- lapply(files, read.csv, header = TRUE)
-combined.df <- rbindlist(lists)
-writeCsvD(combined.df)
 setwd(origindir)
 
 # Write to allow reading
@@ -32,7 +25,6 @@ targetdir1 <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_s
 subTdir1 <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_summary_only/CSV")
 
 preprocess_cell_seg_summary(folderoffolders, targetdir1, subTdir1, origindir)
-
 combined_summary_df <- read.csv("Data/combined_summary_df.csv")
 
 # # Number of images per slide

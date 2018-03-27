@@ -137,23 +137,23 @@ preprocess_cell_seg_summary <- function(folderoffolders, targetdir, subTdir, ori
 # Cleancellseg
 clean_merged_cell_seg <- function(df){
   print("Remove Columns")
-  remove <- c("TMA.Row",
-              "TMA.Column",
-              "TMA.Field",
-              "TMA.Sector",
-              "Lab.ID",
-              "inForm.2.2.6004.14667",
-              "Path",
-              #"Tissue.Category.Area..pixels.",
-              "Distance.from.Process.Region.Edge..pixels.",
-              "Process.Region.ID",
-              #"Distance.from.Tissue.Category.Edge..pixels.",
-              "Category.Region.ID",
-              "Cell.Density..per.megapixel.",
-              "Total.Cells")
-  df.combined <- df[,!(names(df) %in% remove)]
+  df.combined <- df %>% 
+    dplyr:: select(-contains("TMA")) %>% 
+    dplyr::select(-matches("Lab.ID")) %>% 
+    dplyr::select(-matches("inForm.2.2.6004.14667")) %>%
+    dplyr:: select(-matches("Path")) %>%
+    dplyr::select(-matches("Distance.from.Process.Region.Edge..pixels.")) %>%
+    dplyr::select(-matches("Process.Region.ID"))%>%
+    dplyr::select(-matches("Category.Region.ID")) %>%
+    dplyr::select(-matches("Total.Cells"))
   df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = TRUE))
-  df1 <- df.combined %>% dplyr:: select(-contains("Autofluorescence")) %>% dplyr::select(-contains("Axis")) %>% dplyr::select(-contains("..percent")) %>% dplyr:: select(-contains("Compactness"))%>% dplyr::select(-contains("Nuclei"))
+  df1 <- df.combined %>% dplyr:: select(-contains("Autofluorescence")) %>% 
+    dplyr::select(-contains("Axis")) %>% 
+    dplyr::select(-contains("..percent")) %>% 
+    dplyr:: select(-contains("Compactness")) %>% 
+    dplyr::select(-contains("Nuclei"))
+  df1$Tissue.Category <- fix_tissue_cat(df1)
+  df1$Phenotype <- fix_pheno(df1)
   df2 <- filter(df1, Tissue.Category != "Background")
   df2a <- df2
   writeCsvO(df2a)
