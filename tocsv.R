@@ -17,6 +17,22 @@ setwd(origindir)
 combined.df <- read.csv("Data/combined.df.csv")
 clean_merged_cell_seg(combined.df)
 
+# Fix the raw files (for Radius)
+txt_list <- list()
+c <- 1
+for(i in levels(df2a$Sample.Name)){
+  name <- basename(i)
+  cat('Processing', i, '\n')
+  txt_list[[i]] <- droplevels(subset(df2a, Sample.Name == i))
+  c <- c + 1}
+
+for(i in names(txt_list)){
+  setwd("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Export_Fixed/Cell_seg_only")
+  print(i)
+  write.table(txt_list[[i]], paste0(i,".txt"), quote = F, sep = "\t", row.names = F)
+}
+
+
 # Cell_seg_summary
 ## Scan through folders and separate cell_seg_data_summary.txt files
 ## Set new directories
