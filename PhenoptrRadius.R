@@ -2,7 +2,7 @@
 source("Functions.R")
 
 # Search for ACW5
-base_path <- "/Volumes/ResearchData/Vectra/Vectra3/Jack/CRC_Project/MSS_hiCIRC/Cell_seg_only"
+base_path <- "/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only"
 
 # create a dataframe with your phenotypes in
 Phenotypes <- c("CD4", "CD8", "Class 2", "CD4 + FOXP3", "CD4 + T-bet", "CD4 + RORyt", "Other", "CD8 + T-bet")
