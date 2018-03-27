@@ -153,6 +153,8 @@ clean_merged_cell_seg <- function(df){
     dplyr:: select(-contains("Compactness")) %>% 
     dplyr::select(-contains("Nuclei"))
   df1$Tissue.Category <- fix_tissue_cat(df1)
+  df1$Phenotype <- as.character(df1$Phenotype)
+  df1$Phenotype[df1$Phenotype == ""] <- "DAPI"
   df1$Phenotype <- fix_pheno(df1)
   df2 <- filter(df1, Tissue.Category != "Background")
   df2a <- df2
@@ -201,7 +203,8 @@ fix_pheno <- function(df){
     gsub("nucleui", "DAPI", .) %>%
     gsub("foxp3", "FOXP3", .) %>%
     gsub("Foxp3", "FOXP3", .) %>%
-    gsub("FOXp3", "FOXP3", .)
+    gsub("FOXp3", "FOXP3", .) %>%
+    gsub("CD63", "CD68", .)
   return(df$Phenotype)
 }
 
