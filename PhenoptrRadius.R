@@ -5,17 +5,17 @@ source("Functions.R")
 base_path <- "/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only"
 
 # create a dataframe with your phenotypes in
-Phenotypes <- c("CD4", "CD8", "Class 2", "CD4 + FOXP3", "CD4 + T-bet", "CD4 + RORyt", "Other", "CD8 + T-bet")
+Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
 pairs <- find_pheno_comb(Phenotypes)
-categories <- c("Epithelium", "Stroma")
-radii <- c(30)
+categories <- c("Tumour", "Stroma")
+radii <- c(10, 30)
 
 # Perform these to get AveCountsWithin dataframe
 ## AveCountsWithin <- count_within_batch(base_path, pairs, radii, category = categories, verbose = T)
 ## writeCsvO(AveCountsWithin)
 ACW <- read.csv("Output/AveCountsWithin.csv")
-ACW <- droplevels(subset(ACW, from != "Other"))
-ACW <- droplevels(subset(ACW, to != "Other"))
+ACW <- droplevels(subset(ACW, from != "DAPI"))
+ACW <- droplevels(subset(ACW, to != "DAPI"))
 
 # Factor
 Factor <- c("slide_id",
@@ -28,16 +28,9 @@ ACW1 <- factorthese(ACW, Factor)
 # Create parameter column
 ACW1$parameter <- as.factor(paste(ACW1$from, ACW1$radius, ACW1$to, ACW1$category, ACW1$slide_id, sep = "/"))
 
-# Grep and label
-ACW1[grep("dMMR$", ACW1$slide_id), "Subtype"] <- "MSI"
-ACW1[grep("pMMR$", ACW1$slide_id), "Subtype"] <- "MSS"
-ACW1[grep(".*N[ ]S[[:digit:]]{6}$", ACW1$slide_id), "Subtype"] <- "hiCIRC"
-ACW1$Subtype <- as.factor(ACW1$Subtype)
-
 # Loop for average number per slide
 ACW2 <- ACW1
 output <- data.frame(Parameter = character(),
-                     Subtype = character(),
                      MeanNum = double(),
                      stringsAsFactors = F)
 c <- 1
@@ -47,7 +40,6 @@ for(i in levels(ACW2$parameter)){
   working <- droplevels(subset(ACW2, parameter == i))
   aver <- mean(working$within_mean, na.rm = T)
   output[c, "Parameter"] <- i
-  output[c, "Subtype"] <- as.character(levels(working$Subtype))
   output[c, "MeanNum"] <- aver
   c <- c + 1
 }
