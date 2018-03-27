@@ -17,7 +17,6 @@ setwd(origindir)
 combined.df <- read.csv("Data/combined.df.csv")
 clean_merged_cell_seg(combined.df)
 
-
 # Cell_seg_summary
 ## Scan through folders and separate cell_seg_data_summary.txt files
 ## Set new directories

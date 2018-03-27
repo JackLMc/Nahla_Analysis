@@ -145,13 +145,14 @@ clean_merged_cell_seg <- function(df){
     dplyr::select(-matches("Distance.from.Process.Region.Edge..pixels.")) %>%
     dplyr::select(-matches("Process.Region.ID"))%>%
     dplyr::select(-matches("Category.Region.ID")) %>%
-    dplyr::select(-matches("Total.Cells"))
-  df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = TRUE))
-  df1 <- df.combined %>% dplyr:: select(-contains("Autofluorescence")) %>% 
+    dplyr::select(-matches("Total.Cells")) %>% 
+    dplyr:: select(-contains("Autofluorescence")) %>% 
     dplyr::select(-contains("Axis")) %>% 
     dplyr::select(-contains("..percent")) %>% 
     dplyr:: select(-contains("Compactness")) %>% 
     dplyr::select(-contains("Nuclei"))
+  df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = TRUE))
+  df1 <- df.combined 
   df1$Tissue.Category <- fix_tissue_cat(df1)
   df1$Phenotype <- as.character(df1$Phenotype)
   df1$Phenotype[df1$Phenotype == ""] <- "DAPI"
@@ -204,7 +205,8 @@ fix_pheno <- function(df){
     gsub("foxp3", "FOXP3", .) %>%
     gsub("Foxp3", "FOXP3", .) %>%
     gsub("FOXp3", "FOXP3", .) %>%
-    gsub("CD63", "CD68", .)
+    gsub("CD63", "CD68", .) %>%
+    gsub("^$", "DAPI", .)
   return(df$Phenotype)
 }
 
