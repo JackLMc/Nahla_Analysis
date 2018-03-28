@@ -96,7 +96,7 @@ preprocess_cell_seg_summary <- function(folderoffolders, targetdir, subTdir, ori
   print("Binding together")
   combined_summary_df <- rbindlist(lists)
   #writeCsvD(combined_summary_df)
-  retunr(combined_summary_df)
+  return(combined_summary_df)
   setwd(origindir)
 }
 
