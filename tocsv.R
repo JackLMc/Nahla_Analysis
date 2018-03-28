@@ -33,7 +33,6 @@ combined.df <- read.csv("Data/combined.df.csv")
 # }
 # writeCsvO(Number_of_Images_CS)
 
-
 clean_merged_cell_seg(combined.df)
 
 # Fix the raw files (for Radius)
