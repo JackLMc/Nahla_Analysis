@@ -1,7 +1,7 @@
 # FUNCTIONS
 ## Packages
 library(devtools)
-# devtools::install_github("PerkinElmer/phenoptr", build_vignettes = TRUE)
+# devtools::install_github("PerkinElmer/phenoptr", build_vignettes = T)
 required <- c("tidyverse",
               # "fields",
               "reshape2",
@@ -22,10 +22,10 @@ required <- c("tidyverse",
 
 for (lib in required)
 {
-  if (!require(lib, character.only = TRUE))
+  if (!require(lib, character.only = T))
   {
     install.packages(lib)
-    suppressMessages(library(lib, character.only = TRUE, quietly = TRUE))
+    suppressMessages(library(lib, character.only = T, quietly = T))
   }
 }
 
@@ -52,8 +52,8 @@ preprocess_cell_seg <- function(folderoffolders, targetdir, subTdir, origindir){
   }
   # Copy from the origin, to the target
   print("Copying Files to New Directory")
-  file.copy(from = filelist, to = targetdir, recursive = FALSE, 
-            copy.mode = TRUE)
+  file.copy(from = filelist, to = targetdir, recursive = F, 
+            copy.mode = T)
   # New directory for CSVs
   setwd(targetdir)
   subDir1 <- "CSV"
@@ -73,14 +73,14 @@ preprocess_cell_seg <- function(folderoffolders, targetdir, subTdir, origindir){
     print(cur.output.file)
     print(paste("Working on file:", cur.input.file))
     data <- read.delim(cur.input.file, header = T)
-    write.table(data, file = cur.output.file, sep = ",", col.names = TRUE, row.names = FALSE)}
+    write.table(data, file = cur.output.file, sep = ",", col.names = T, row.names = F)}
   # Bind all together
   options(stringsAsFactors = F)
   files <- list.files(subTdir, pattern = ".csv$")
   setwd(subTdir)
-  lists <- lapply(files, read.csv, header = TRUE)
+  lists <- lapply(files, read.csv, header = T)
   print("Binding together")
-  combined.df <- rbindlist(lists)
+  combined.df <- rbindlist(lists, fill = T)
   writeCsvD(combined.df)
   setwd(origindir)
 }
@@ -101,8 +101,8 @@ preprocess_cell_seg_summary <- function(folderoffolders, targetdir, subTdir, ori
   }
   # Copy from the origin, to the target
   print("Copying to new directory")
-  file.copy(from = filelist, to = targetdir, recursive = FALSE, 
-            copy.mode = TRUE)
+  file.copy(from = filelist, to = targetdir, recursive = F, 
+            copy.mode = T)
   # New directory for CSVs
   setwd(targetdir)
   subDir1 <- "CSV"
@@ -122,14 +122,14 @@ preprocess_cell_seg_summary <- function(folderoffolders, targetdir, subTdir, ori
     print(cur.output.file)
     print(paste("Working on file:", cur.input.file))
     data <- read.delim(cur.input.file, header = T)
-    write.table(data, file = cur.output.file, sep = ",", col.names = TRUE, row.names = FALSE)}
+    write.table(data, file = cur.output.file, sep = ",", col.names = T, row.names = F)}
   # Bind all together
   options(stringsAsFactors = F)
   files <- list.files(subTdir, pattern = ".csv$")
   setwd(subTdir)
-  lists <- lapply(files, read.csv, header = TRUE)
+  lists <- lapply(files, read.csv, header = T)
   print("Binding together")
-  combined_summary_df <- rbindlist(lists)
+  combined_summary_df <- rbindlist(lists, fill = T)
   writeCsvD(combined_summary_df)
   setwd(origindir)
 }
@@ -151,7 +151,7 @@ clean_merged_cell_seg <- function(df){
     dplyr::select(-contains("..percent")) %>% 
     dplyr:: select(-contains("Compactness")) %>% 
     dplyr::select(-contains("Nuclei"))
-  df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = TRUE))
+  df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = T))
   df1 <- df.combined 
   df1$Tissue.Category <- fix_tissue_cat(df1)
   df1$Phenotype <- as.character(df1$Phenotype)
@@ -169,7 +169,7 @@ Bind_them <- function(folder){
   files <- list.files(folder, pattern = ".csv$")
   setwd(folder)
   print("Reading files")
-  lists <- lapply(files, read.csv, header = TRUE)
+  lists <- lapply(files, read.csv, header = T)
   print("Binding files")
   combined.df <- rbindlist(lists)
   setwd(c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis"))
