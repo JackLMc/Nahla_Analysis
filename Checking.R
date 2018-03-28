@@ -105,8 +105,8 @@ preprocess_cell_seg_summary <- function(folderoffolders, targetdir, subTdir, ori
 
 
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/new_export_directory")
-targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/new_export_directory/Cell_seg_summary_only")
-subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/new_export_directory/Cell_seg_summary_only/CSV")
+targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/new_export_directory/Cell_seg_only")
+subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/new_export_directory/Cell_seg_only/CSV")
 origindir <- c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis")
 
 # Preprocess the folders, convert .txt to .csv and bind all
