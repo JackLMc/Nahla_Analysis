@@ -14,6 +14,7 @@ NearNeigh <- compute_all_nearest_distance("/Users/jlm650/OneDrive/University_of_
 # Write a TSV or a CSV?
 # write.table(NearNeigh, file = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/NearNeigh.tsv", row.names = F, sep = "\t")
 # writeCsvO(NearNeigh)
+# Actually have to read this in, else it's as a tibble
 NearNeigh <- read.csv("Output/NearNeigh.csv")
 
 # Remove stuff that doesn't matter anymore
@@ -27,7 +28,7 @@ drop <- c("tag",
           "Batch",
           "Distance.from.Tissue.Category.Edge..microns")
 NN1 <- droplevels(NN[,!(names(NN) %in% drop)])
-
+head(NN1)
 # Gather Distance variables into column to
 NN2 <- NN1 %>% gather(contains("Distance.to"), key = "PhenoTo", value = "Distance")
 
