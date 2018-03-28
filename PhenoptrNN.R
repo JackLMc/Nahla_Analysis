@@ -72,11 +72,11 @@ NN5$Comb <- as.factor(paste(NN5$Tissue.Category, NN5$PhenoFrom, ".Distance.To.",
 
 # Factor them all
 NN5$Comb <- as.factor(NN5$Comb)
+NN5$Slide.ID <- as.factor(NN5$Slide.ID)
 
 ## Loop and find the mean distance (for the replicates to get a biological replicate)
 output <- data.frame(Comb = character(),
                      MeanDist = double(),
-                     Type = character(),
                      Slide.ID = character(),
                      stringsAsFactors = FALSE)
 
@@ -88,7 +88,6 @@ for(i in levels(NN5$Comb)){
   y <- mean(df$Distance, na.rm = T)
   output[c, "Comb"] <- i
   output[c, "MeanDist"] <- y
-  output[c, "Type"] <- as.character(levels(df$Type))
   output[c, "Slide.ID"] <- as.character(levels(df$Slide.ID))
   c <- c + 1}
 
