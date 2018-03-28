@@ -241,7 +241,8 @@ fix_tissue_cat <- function(df){
     gsub("stromal", "Stroma", .) %>%
     gsub("Stromal", "Stroma", .) %>%
     gsub("background", "Background", .) %>%
-    gsub("BACKGROUND", "Background", .)
+    gsub("BACKGROUND", "Background", .)  %>%
+    gsub("Background1", "Background", .)
   return(df$Tissue.Category)
 }
 
