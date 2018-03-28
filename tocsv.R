@@ -15,6 +15,25 @@ setwd(origindir)
 
 # Write to allow reading
 combined.df <- read.csv("Data/combined.df.csv")
+
+# # Number of images per slide (cell seg)
+# CD1a <- factorthese(combined.df, c("Sample.Name", "Tissue.Category", "Slide.ID", "Phenotype"))
+# 
+# Number_of_Images_CS <- data.frame(Slide = character(),
+#                      Number_of_Fields = double(),
+#                      stringsAsFactors = F)
+# c <- 1
+# for(i in levels(CD1a$Slide.ID)){
+#   print(i)
+#   work <- droplevels(subset(CD1a, Slide.ID == i))
+#   nom <- nlevels(work$Sample.Name)
+#   Number_of_Images_CS[c, "Slide"] <- i
+#   Number_of_Images_CS[c, "Number_of_Fields"] <- nom
+#   c <- c + 1
+# }
+# writeCsvO(Number_of_Images_CS)
+
+
 clean_merged_cell_seg(combined.df)
 
 # Fix the raw files (for Radius)
