@@ -20,7 +20,7 @@ combined.df <- read.csv("Data/combined.df.csv")
 # CD1a <- factorthese(combined.df, c("Sample.Name", "Tissue.Category", "Slide.ID", "Phenotype"))
 # 
 # Number_of_Images_CS <- data.frame(Slide = character(),
-#                      Number_of_Fields = double(),
+#                      Number_of_Fields_CS = double(),
 #                      stringsAsFactors = F)
 # c <- 1
 # for(i in levels(CD1a$Slide.ID)){
@@ -28,7 +28,7 @@ combined.df <- read.csv("Data/combined.df.csv")
 #   work <- droplevels(subset(CD1a, Slide.ID == i))
 #   nom <- nlevels(work$Sample.Name)
 #   Number_of_Images_CS[c, "Slide"] <- i
-#   Number_of_Images_CS[c, "Number_of_Fields"] <- nom
+#   Number_of_Images_CS[c, "Number_of_Fields_CS"] <- nom
 #   c <- c + 1
 # }
 # writeCsvO(Number_of_Images_CS)
@@ -64,7 +64,7 @@ combined_summary_df <- read.csv("Data/combined_summary_df.csv")
 # CD1 <- factorthese(combined_summary_df, c("Sample.Name", "Tissue.Category", "Slide.ID", "Phenotype"))
 # 
 # Number_of_Images <- data.frame(Slide = character(),
-#                      Number_of_Fields = double(),
+#                      Number_of_Fields_CSS = double(),
 #                      stringsAsFactors = F)
 # c <- 1
 # for(i in levels(CD1$Slide.ID)){
@@ -72,7 +72,7 @@ combined_summary_df <- read.csv("Data/combined_summary_df.csv")
 #   work <- droplevels(subset(CD1, Slide.ID == i))
 #   nom <- nlevels(work$Sample.Name)
 #   Number_of_Images[c, "Slide"] <- i
-#   Number_of_Images[c, "Number_of_Fields"] <- nom
+#   Number_of_Images[c, "Number_of_Fields_CSS"] <- nom
 #   c <- c + 1
 # }
 # writeCsvO(Number_of_Images)
