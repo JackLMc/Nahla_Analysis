@@ -301,8 +301,10 @@ trim <- function (x){
 
 # Convert CSV to TSV
 csvtotsv <- function(bp, op){
+  print("Reading")
   df1 <- read.csv(bp)
   names(df1) <- gsub("\\.", " ", names(df1))
+  print("Writing")
   write.table(df1, file = op, row.names = F, sep="\t")
 }
 
