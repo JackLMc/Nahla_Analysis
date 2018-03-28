@@ -36,6 +36,55 @@ cbcols <- c("Type1" = "#999999",
             "Type4" = "#009E73")
 
 # Preprocess
+## Should set directories first
+set_directories <- function(folderoffolders, targetdir, targetdir1, origindir){
+  print("Setting up Directories")
+  setwd(folderoffolders)
+  thousand.folders <- list.dirs(full.names = T)
+  print("Processing Cell seg data")
+  filelist1 <- sapply(thousand.folders[-1], function(x)
+  {list.files(x, pattern = "]_cell_seg_data.txt$", full.names = T)
+  })
+  filelist = unlist(filelist1)
+  # Create a collated cell_seg_only folder
+  subDir <- "Cell_seg_only"
+  if (!file.exists(subDir)){
+    dir.create(file.path(folderoffolders, subDir))
+  }
+  # Copy from the origin, to the target
+  print("Copying Files to New Directory")
+  file.copy(from = filelist, to = targetdir, recursive = F, 
+            copy.mode = T)
+  # New directory for CSVs
+  setwd(targetdir)
+  subDir1 <- "CSV"
+  if (!file.exists(subDir1)){
+    dir.create(file.path(targetdir, subDir1))
+  }
+  
+  print("Processing Cell seg summary data")
+  filelist2 <- sapply(thousand.folders[-1], function(x)
+  {list.files(x, pattern = "]_cell_seg_summary_data.txt$", full.names = T)
+  })
+  filelist2a = unlist(filelist2)
+  # Create a collated cell_seg_only folder
+  subDir1a <- "Cell_seg_summary_only"
+  if (!file.exists(subDir1)){
+    dir.create(file.path(folderoffolders, subDir1a))
+  }
+  
+  # Copy from the origin, to the target
+  print("Copying Files to New Directory")
+  file.copy(from = filelist2a, to = targetdir1, recursive = F, 
+            copy.mode = T)
+  # New directory for CSVs
+  setwd(targetdir1)
+  subDir1 <- "CSV"
+  if (!file.exists(subDir1)){
+    dir.create(file.path(targetdir, subDir1))
+  }
+}
+
 ## Cell_seg_data
 preprocess_cell_seg <- function(folderoffolders, targetdir, subTdir, origindir){
   print("Setting up Directories")
@@ -151,14 +200,17 @@ clean_merged_cell_seg <- function(df){
     dplyr::select(-contains("..percent")) %>% 
     dplyr:: select(-contains("Compactness")) %>% 
     dplyr::select(-contains("Nuclei"))
+  print("Fix Columns")
   df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = T))
   df1 <- df.combined 
   df1$Tissue.Category <- fix_tissue_cat(df1)
   df1$Phenotype <- as.character(df1$Phenotype)
   df1$Phenotype[df1$Phenotype == ""] <- "DAPI"
   df1$Phenotype <- fix_pheno(df1)
+  print("Remove Background")
   df2 <- filter(df1, Tissue.Category != "Background")
   df2a <- df2
+  print("Write cleaned data")
   writeCsvO(df2a)
 }
 
