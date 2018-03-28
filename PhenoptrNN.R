@@ -18,7 +18,10 @@ NearNeigh <- compute_all_nearest_distance("/Users/jlm650/OneDrive/University_of_
 NearNeigh <- read.csv("Output/NearNeigh.csv")
 
 # Remove stuff that doesn't matter anymore
-NN <- NearNeigh %>% dplyr:: select(-contains("Opal"))
+NN <- NearNeigh %>% 
+  dplyr:: select(-contains("Opal")) %>% 
+  dplyr:: select(-contains("Total.Weighting")) %>% 
+  dplyr:: select(-contains("pixels"))
 drop <- c("tag",
           "Cell.ID",
           "Cell.X.Position",
@@ -28,7 +31,9 @@ drop <- c("tag",
           "Batch",
           "Distance.from.Tissue.Category.Edge..microns")
 NN1 <- droplevels(NN[,!(names(NN) %in% drop)])
-head(NN1)
+NearestNeighbour_all_Cells <- NN1
+# writeCsvO(NearestNeighbour_all_Cells)
+
 # Gather Distance variables into column to
 NN2 <- NN1 %>% gather(contains("Distance.to"), key = "PhenoTo", value = "Distance")
 
@@ -49,16 +54,18 @@ NN4 <- NN3 %>%
 
 ## Make the PhenoTo and PhenoFrom the same
 NN4$PhenoTo <- gsub("Distance.to.", "", NN4$PhenoTo)
-NN4$PhenoFrom <- gsub(" [+] ", "...", NN4$PhenoFrom)
+NN4$PhenoTo <- gsub(" ", ".", NN4$PhenoTo)
 NN4$PhenoFrom <- gsub(" ", ".", NN4$PhenoFrom)
-NN4$PhenoFrom <- gsub("[-]", ".", NN4$PhenoFrom)
 
-## Remove rows where PhenoTo = PhenoFrom
+## Remove rows where either PhenoTo or PhenoFrom is DAPI
 NN4$PhenoTo <- as.factor(NN4$PhenoTo)
 NN4$PhenoFrom <- as.factor(NN4$PhenoFrom)
 
-NN4a <- droplevels(subset(NN4, PhenoTo != "Other"))
-NN5 <- droplevels(subset(NN4a, PhenoFrom != "Other"))
+NN4a <- droplevels(subset(NN4, PhenoTo != "DAPI"))
+NN5 <- droplevels(subset(NN4a, PhenoFrom != "DAPI"))
+
+NearestNeighbour_no_DAPI_relationships <- NN5
+# writeCsvO(NearestNeighbour_no_DAPI_relationships)
 
 # Paste back together
 NN5$Comb <- as.factor(paste(NN5$Tissue.Category, NN5$PhenoFrom, ".Distance.To.", NN5$PhenoTo, NN5$Sample.Name, sep = "/"))
