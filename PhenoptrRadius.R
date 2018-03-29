@@ -94,7 +94,7 @@ for(i in levels(ACW5a$Parameter)){
   temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/AverageCountsWithin/Raw",
+         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/AverageCountsWithin/Raw",
          height = 6, width = 6, units = 'in', dpi = 600)
 }
 
@@ -130,7 +130,7 @@ g <- g + ggtitle("PCA of the Average Number of Immune Cells
                  within a 30 micron Radius")
 
 ggsave("PCA of Radius.png" , plot = g, device = "png",
-       path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/AverageCountsWithin/PCA",
+       path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/AverageCountsWithin/PCA",
        height = 6, width = 6, units = 'in', dpi = 600)
 
 ## Plot Vectors of PCA
@@ -212,7 +212,7 @@ for(i in levels(PC_ACW2$Component)){
   temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/AverageCountsWithin/PCA/PC_Comp",
+         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/AverageCountsWithin/PCA/PC_Comp",
          height = 6, width = 6, units = 'in', dpi = 600)
 }
 
@@ -278,6 +278,6 @@ for(i in levels(Normality$uniq)){
     stat_qq(aes(sample = ComponentScore)) 
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/AverageCountsWithin/PCA/Normality",
+         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/AverageCountsWithin/PCA/Normality",
          height = 6, width = 6, units = 'in', dpi = 600)
 }

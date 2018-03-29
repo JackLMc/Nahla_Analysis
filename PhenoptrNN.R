@@ -139,8 +139,10 @@ NN9 <- read.csv("Output/NN9.csv")
 
 ## Make the Slide.ID the row.names
 NN9a <- data.frame(NN9[, names(NN9) != "Slide.ID"], row.names = NN9[, names(NN9) == "Slide.ID"])
-NN10 <- NN9a %>% dplyr:: select(-contains("Other")) %>% dplyr:: select(-contains("Slide.ID")) %>% dplyr:: select(-contains("Type", ignore.case = F))
+NN10 <- NN9a %>% dplyr:: select(-contains("DAPI")) %>% dplyr:: select(-contains("Slide.ID")) 
+head(NN10)
 
+NN_impute <- na.omit(NN10)
 # randomForest imputing
 library(randomForest)
 NN_impute <- rfImpute(Subtype ~ ., NN10)
@@ -158,12 +160,11 @@ display(model)
 
 # PCA
 ### Complete PCA
-prin_comp <- prcomp(NN_impute[, names(NN_impute) != "Subtype"], scale. = T)
+prin_comp <- prcomp(NN_impute, scale. = T)
 plot(prin_comp)
 
 Subtype <- NN_impute[, "Subtype"]
-g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, 
-              groups = Subtype, ellipse = T,
+g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, ellipse = T,
               circle = F,
               var.axes = F
 )
@@ -174,7 +175,7 @@ g <- g + theme(legend.direction = 'horizontal',
 g <- g + ggtitle("PCA of the Mean Nearest Distance Between Immune Subsets")
 g
 ggsave("PCA of Nearest Neighbour.png" , plot = g, device = "png",
-       path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/NearestNeighbour",
+       path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
        height = 6, width = 6, units = 'in', dpi = 600)
 
 
@@ -203,7 +204,7 @@ for(i in levels(PC_NN3$Component)){
   temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/NearestNeighbour",
+         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
          height=5, width=5, units='in', dpi=600)
 }
 
