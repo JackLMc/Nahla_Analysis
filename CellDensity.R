@@ -47,11 +47,6 @@ CS1d$Slide.ID <- as.factor(CS1d$Slide.ID)
 CS1d$Tissue.Category <- as.factor(CS1d$Tissue.Category)
 CS1d$Phenotype <- as.factor(CS1d$Phenotype)
 
-# Label
-CS1d[grep("dMMR$", CS1d$Slide.ID), "Subtype"] <- "MSI"
-CS1d[grep("pMMR$", CS1d$Slide.ID), "Subtype"] <- "MSS"
-CS1d[grep(".*N[ ]S[[:digit:]]{6}$", CS1d$Slide.ID), "Subtype"] <- "hiCIRC"
-CS1d$Subtype <- as.factor(CS1d$Subtype)
 CS1d$Rank <- rank(CS1d$Average.cell.Density)
 
 # Paste together Tissue.Category and Phenotype
