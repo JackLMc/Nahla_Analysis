@@ -2,12 +2,10 @@
 source("Functions.R")
 
 # Only needs to be ran once 
-
 # Preprocess
 ## Cell_seg_data
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports")
 targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only")
-subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only/CSV")
 origindir <- c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis")
 
 options(stringsAsFactors = F)
@@ -15,8 +13,6 @@ files <- list.files(targetdir, pattern = ".txt$")
 setwd(targetdir)
 lists <- lapply(files, read_cell_seg_data)
 combined_df_ <- rbindlist(lists, fill = T)
-
-head(combined_df_)
 
 df.combined <- combined_df_ %>% 
   dplyr:: select(-contains("TMA")) %>% 
@@ -32,7 +28,6 @@ df.combined <- combined_df_ %>%
   dplyr::select(-contains("..percent")) %>% 
   dplyr:: select(-contains("Compactness")) %>% 
   dplyr::select(-contains("Nuclei"))
-
 
 df1 <- df.combined 
 
