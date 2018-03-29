@@ -33,6 +33,7 @@ drop <- c("tag",
 NN1 <- droplevels(NN[,!(names(NN) %in% drop)])
 NearestNeighbour_all_Cells <- NN1
 # writeCsvO(NearestNeighbour_all_Cells)
+NN1 <- read.csv("Output/NearestNeighbour_all_Cells.csv")
 
 # Gather Distance variables into column to
 NN2 <- NN1 %>% gather(contains("Distance.to"), key = "PhenoTo", value = "Distance")
@@ -61,47 +62,46 @@ NN4$PhenoFrom <- gsub(" ", ".", NN4$PhenoFrom)
 NN4$PhenoTo <- as.factor(NN4$PhenoTo)
 NN4$PhenoFrom <- as.factor(NN4$PhenoFrom)
 
-NN4a <- droplevels(subset(NN4, PhenoTo != "DAPI"))
-NN5 <- droplevels(subset(NN4a, PhenoFrom != "DAPI"))
-
-NearestNeighbour_no_DAPI_relationships <- NN5
+# NN4a <- droplevels(subset(NN4, PhenoTo != "DAPI"))
+# NN5 <- droplevels(subset(NN4a, PhenoFrom != "DAPI"))
+# 
+# NearestNeighbour_no_DAPI_relationships <- NN5
 # writeCsvO(NearestNeighbour_no_DAPI_relationships)
+NN6 <- NN4
 
-# Paste back together
-NN5$Comb <- as.factor(paste(NN5$Tissue.Category, NN5$PhenoFrom, ".Distance.To.", NN5$PhenoTo, NN5$Sample.Name, sep = "/"))
-
-# Factor them all
-NN5$Comb <- as.factor(NN5$Comb)
-NN5$Slide.ID <- as.factor(NN5$Slide.ID)
-
-## Loop and find the mean distance (for the replicates to get a biological replicate)
-output <- data.frame(Comb = character(),
-                     MeanDist = double(),
-                     Slide.ID = character(),
-                     stringsAsFactors = FALSE)
-
-c <- 1
-for(i in levels(NN5$Comb)){
-  name <- basename(i)
-  cat('Processing', i, '\n')
-  df <- droplevels(subset(NN5, Comb == i))
-  y <- mean(df$Distance, na.rm = T)
-  output[c, "Comb"] <- i
-  output[c, "MeanDist"] <- y
-  output[c, "Slide.ID"] <- as.character(levels(df$Slide.ID))
-  c <- c + 1}
-
-# Separate back into original columns
-NN6 <- output %>%
-  separate(Comb, c("Tissue.Category", "PhenoFrom","Distance.To", "PhenoTo", "Sample.Name"), "/")
+# # Paste back together
+# NN5$Comb <- as.factor(paste(NN5$Tissue.Category, NN5$PhenoFrom, ".Distance.To.", NN5$PhenoTo, NN5$Sample.Name, sep = "/"))
+# 
+# # Factor them all
+# NN5$Comb <- as.factor(NN5$Comb)
+# NN5$Slide.ID <- as.factor(NN5$Slide.ID)
+# 
+# ## Loop and find the mean distance (for the replicates to get a biological replicate)
+# output <- data.frame(Comb = character(),
+#                      MeanDist = double(),
+#                      Slide.ID = character(),
+#                      stringsAsFactors = FALSE)
+# 
+# c <- 1
+# for(i in levels(NN5$Comb)){
+#   name <- basename(i)
+#   cat('Processing', i, '\n')
+#   df <- droplevels(subset(NN5, Comb == i))
+#   y <- mean(df$Distance, na.rm = T)
+#   output[c, "Comb"] <- i
+#   output[c, "MeanDist"] <- y
+#   output[c, "Slide.ID"] <- as.character(levels(df$Slide.ID))
+#   c <- c + 1}
+# 
+# # Separate back into original columns
+# NN6 <- output %>%
+#   separate(Comb, c("Tissue.Category", "PhenoFrom","Distance.To", "PhenoTo", "Sample.Name"), "/")
 
 # Combine and reloop for mean nearest distance on a slide basis
-NN6$Parameter <- as.factor(paste(NN6$Tissue.Category, NN6$PhenoFrom, NN6$Distance.To, NN6$PhenoTo, NN6$Slide.ID, sep = "/"))
-NN6$Type <- as.factor(NN6$Type)
+NN6$Parameter <- as.factor(paste(NN6$Tissue.Category, NN6$PhenoFrom, ".Distance.To.", NN6$PhenoTo, NN6$Slide.ID, sep = "/"))
 NN6a <- data.frame(Parameter = character(),
                      Distance = double(),
-                     Type = character(),
-                     stringsAsFactors = FALSE)
+                     stringsAsFactors = F)
 
 
 c <- 1
@@ -109,15 +109,18 @@ for(i in levels(NN6$Parameter)){
   name <- basename(i)
   cat('Processing', i, '\n')
   df <- droplevels(subset(NN6, Parameter == i))
-  y <- mean(df$MeanDist, na.rm = T)
+  y <- mean(df$Distance, na.rm = T)
   NN6a[c, "Parameter"] <- i
   NN6a[c, "Distance"] <- y
-  NN6a[c, "Type"] <- as.character(levels(df$Type))
   c <- c + 1}
 
 # Remove Slide.ID from combined Parameter column
 NN7 <- NN6a %>%
   separate(Parameter, c("Tissue.Category", "PhenoFrom","Distance.To", "PhenoTo", "Slide.ID"), "/")
+
+Mean_NearNeigh_per_Slide <- NN7
+writeCsvO(Mean_NearNeigh_per_Slide)
+
 NN7$Parameter <- as.factor(paste(NN7$Tissue.Category, NN7$PhenoFrom, NN7$Distance.To, NN7$PhenoTo, sep = "_"))
 
 # Drop what you don't need
@@ -127,18 +130,11 @@ drop <- c("Tissue.Category",
           "PhenoTo")
 NN8 <- droplevels(NN7[,!(names(NN7) %in% drop)])
 NN8$Slide.ID <- as.factor(NN8$Slide.ID)
-NN8$Type <- as.factor(NN8$Type)
 
 # Spread
 NN9 <- spread(NN8, key = "Parameter", value = "Distance")
 
-# Change the Types to proper types
-NN9[grep("dMMR$", NN9$Slide.ID), "Subtype"] <- "MSI"
-NN9[grep("pMMR$", NN9$Slide.ID), "Subtype"] <- "MSS"
-NN9[grep(".*N[ ]S[[:digit:]]{6}$", NN9$Slide.ID), "Subtype"] <- "hiCIRC"
-NN9$Subtype <- as.factor(NN9$Subtype)
-
-# writeCsvO(NN9)
+writeCsvO(NN9)
 NN9 <- read.csv("Output/NN9.csv")
 
 ## Make the Slide.ID the row.names
