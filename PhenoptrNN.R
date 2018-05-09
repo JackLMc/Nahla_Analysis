@@ -121,6 +121,30 @@ NN7 <- NN6a %>%
 Mean_NearNeigh_per_Slide <- NN7
 writeCsvO(Mean_NearNeigh_per_Slide)
 
+
+cell_seg_path <- c("/Users/jlm650/Desktop/")
+Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
+pairs <- find_pheno_comb(Phenotypes)
+
+out_path <- path.expand('~/spatial_distribution_report.html')
+
+spatial_distribution_report(cell_seg_path, pairs, output_path=out_path)
+base_path <- '/Users/jlm650/Desktop/8-B 10-5866/'
+setwd("/Users/jlm650/Desktop/8-B 10-5866/")
+colors <- c('CD4'='#999999',
+            'CD8'='#E69F00',
+            'CD20' = '#56B4E9',
+            'CD68' = '#009E73',
+            'FOXP3' = '#F0E442',
+            'DAPI' = '#0072B2')
+
+
+paths <- list_cell_seg_files(base_path)
+for (path in paths)
+  spatial_distribution_report(path, pairs, colors)
+
+
+
 NN7$Parameter <- as.factor(paste(NN7$Tissue.Category, NN7$PhenoFrom, NN7$Distance.To, NN7$PhenoTo, sep = "_"))
 
 # Drop what you don't need

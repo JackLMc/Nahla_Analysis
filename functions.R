@@ -12,11 +12,8 @@ required <- c("tidyverse",
               "corrplot",
               "pscl",
               "factoextra",
-              "arm",
               "randomForest",
               "devtools",
-              "aplpack",
-              "Rtsne",
               "data.table",
               "magrittr")
 
