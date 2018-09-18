@@ -7,11 +7,15 @@ source("Functions.R")
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports")
 targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only")
 subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only/CSV")
-origindir <- c("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis")
+origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
 preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
-setwd(origindir)
+files <- list.files(subTdir, pattern = ".csv$")
+setwd(subTdir)
+lists <- lapply(files, read.csv, header = T)
+combined.df <- rbindlist(lists, fill = T)
+writeCsvD(combined.df)
 
 # Write to allow reading
 combined.df <- read.csv("Data/combined.df.csv")
