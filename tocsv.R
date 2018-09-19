@@ -1,7 +1,7 @@
 # Source Functions + Packages
 source("Functions.R")
 
-# Only needs to be ran once 
+# First batch
 # Cell_seg
 ## Set the directories
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports")
@@ -10,14 +10,11 @@ subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_
 origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
-preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
-files <- list.files(subTdir, pattern = ".csv$")
-setwd(subTdir)
-lists <- lapply(files, read.csv, header = T)
-combined.df <- rbindlist(lists, fill = T)
+combined.df <- preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
 writeCsvD(combined.df)
 
 # Write to allow reading
+setwd(origindir)
 combined.df <- read.csv("Data/combined.df.csv")
 
 # # Number of images per slide (cell seg)
@@ -38,6 +35,38 @@ combined.df <- read.csv("Data/combined.df.csv")
 # writeCsvO(Number_of_Images_CS)
 
 clean_merged_cell_seg(combined.df)
+df2a <- read.csv("Output/df2a.csv")
+df3 <- df2a[, c("Slide.ID", "Sample.Name", "Tissue.Category", "Phenotype", "Cell.ID", "Cell.X.Position", "Cell.Y.Position")]
+writeCsvO(df3)
+
+# Batch 2
+folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/chris folder FEDOR/Nahla new results/")
+targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/chris folder FEDOR/Nahla new results/Cell_seg_only")
+subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/chris folder FEDOR/Nahla new results/Cell_seg_only/CSV")
+origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/")
+
+# Preprocess the folders, convert .txt to .csv and bind all
+combined.df1 <- preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
+writeCsvD(combined.df1)
+
+# Write to allow reading
+setwd(origindir)
+combined.df1 <- read.csv("Data/combined.df1.csv")
+
+clean_merged_cell_seg1(combined.df1)
+df2b <- read.csv("Output/df2b.csv")
+df4 <- df2b[, c("Slide.ID", "Sample.Name", "Tissue.Category", "Phenotype", "Cell.ID", "Cell.X.Position", "Cell.Y.Position")]
+writeCsvO(df4)
+
+
+
+
+
+
+
+
+
+
 
 # Fix the raw files (for Radius)
 txt_list <- list()

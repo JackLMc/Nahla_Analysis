@@ -5,23 +5,34 @@ source("Functions.R")
 
 # NEAREST NEIGHBOUR
 ## Convert old DF to a tsv file
-csvtotsv("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/df2a.csv",
-         "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
+csvtotsv("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/df3.csv",
+         "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
 
 ## Calculate distances
-NearNeigh <- compute_all_nearest_distance("/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
+NearNeigh <- compute_all_nearest_distance("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
+writeCsvO(NearNeigh)
+
+
+csvtotsv("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/df4.csv",
+         "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF2_tab.tsv")
+
+## Calculate distances
+NearNeigh1 <- compute_all_nearest_distance("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF2_tab.tsv")
+writeCsvO(NearNeigh1)
 
 # Write a TSV or a CSV?
 # write.table(NearNeigh, file = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/NearNeigh.tsv", row.names = F, sep = "\t")
 # writeCsvO(NearNeigh)
 # Actually have to read this in, else it's as a tibble
 NearNeigh <- read.csv("Output/NearNeigh.csv")
+NearNeigh1 <- read.csv("Output/NearNeigh1.csv")
 
 # Remove stuff that doesn't matter anymore
-NN <- NearNeigh %>% 
-  dplyr:: select(-contains("Opal")) %>% 
-  dplyr:: select(-contains("Total.Weighting")) %>% 
-  dplyr:: select(-contains("pixels"))
+NearNeigh$tag <- as.character(NearNeigh$tag)
+NearNeigh1$tag <- as.character(NearNeigh1$tag)
+NN <- rbind(NearNeigh, NearNeigh1)
+writeCsvO(NN)
+
 drop <- c("tag",
           "Cell.ID",
           "Cell.X.Position",
@@ -32,11 +43,25 @@ drop <- c("tag",
           "Distance.from.Tissue.Category.Edge..microns")
 NN1 <- droplevels(NN[,!(names(NN) %in% drop)])
 NearestNeighbour_all_Cells <- NN1
+
 # writeCsvO(NearestNeighbour_all_Cells)
 NN1 <- read.csv("Output/NearestNeighbour_all_Cells.csv")
 
 # Gather Distance variables into column to
 NN2 <- NN1 %>% gather(contains("Distance.to"), key = "PhenoTo", value = "Distance")
+
+that <- data.frame()
+
+c <- 1
+for(i in levels(NN1$Slide.ID)){
+  this <- droplevels(subset(NN1, Slide.ID == i))
+  images <- nlevels(this$Sample.Name)
+  that[c, "Slide"] <- i
+  that[c, "images"] <- images
+  c <- c + 1
+}
+
+writeCsvO(that)
 
 # Make a unique column 
 NN2$Comb <- as.factor(paste(NN2$Tissue.Category, NN2$Phenotype, NN2$PhenoTo, NN2$Sample.Name, sep = "/"))
@@ -50,6 +75,7 @@ drop <- c("Sample.Name",
 NN3 <- droplevels(NN2[,!(names(NN2) %in% drop)])
 
 ## Separate 
+head(NN3)
 NN4 <- NN3 %>%
   separate(Comb, c("Tissue.Category", "PhenoFrom", "PhenoTo", "Sample.Name"), "/")
 
@@ -98,11 +124,11 @@ NN6 <- NN4
 #   separate(Comb, c("Tissue.Category", "PhenoFrom","Distance.To", "PhenoTo", "Sample.Name"), "/")
 
 # Combine and reloop for mean nearest distance on a slide basis
+head(NN6)
 NN6$Parameter <- as.factor(paste(NN6$Tissue.Category, NN6$PhenoFrom, ".Distance.To.", NN6$PhenoTo, NN6$Slide.ID, sep = "/"))
 NN6a <- data.frame(Parameter = character(),
                      Distance = double(),
                      stringsAsFactors = F)
-
 
 c <- 1
 for(i in levels(NN6$Parameter)){
@@ -121,28 +147,27 @@ NN7 <- NN6a %>%
 Mean_NearNeigh_per_Slide <- NN7
 writeCsvO(Mean_NearNeigh_per_Slide)
 
-
-cell_seg_path <- c("/Users/jlm650/Desktop/")
-Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
-pairs <- find_pheno_comb(Phenotypes)
-
-out_path <- path.expand('~/spatial_distribution_report.html')
-
-spatial_distribution_report(cell_seg_path, pairs, output_path=out_path)
-base_path <- '/Users/jlm650/Desktop/8-B 10-5866/'
-setwd("/Users/jlm650/Desktop/8-B 10-5866/")
-colors <- c('CD4'='#999999',
-            'CD8'='#E69F00',
-            'CD20' = '#56B4E9',
-            'CD68' = '#009E73',
-            'FOXP3' = '#F0E442',
-            'DAPI' = '#0072B2')
-
-
-paths <- list_cell_seg_files(base_path)
-for (path in paths)
-  spatial_distribution_report(path, pairs, colors)
-
+# cell_seg_path <- c("/Users/jlm650/Desktop/")
+# Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
+# pairs <- find_pheno_comb(Phenotypes)
+# 
+# out_path <- path.expand('~/spatial_distribution_report.html')
+# 
+# spatial_distribution_report(cell_seg_path, pairs, output_path=out_path)
+# base_path <- '/Users/jlm650/Desktop/8-B 10-5866/'
+# setwd("/Users/jlm650/Desktop/8-B 10-5866/")
+# colors <- c('CD4'='#999999',
+#             'CD8'='#E69F00',
+#             'CD20' = '#56B4E9',
+#             'CD68' = '#009E73',
+#             'FOXP3' = '#F0E442',
+#             'DAPI' = '#0072B2')
+# 
+# 
+# paths <- list_cell_seg_files(base_path)
+# for (path in paths)
+#   spatial_distribution_report(path, pairs, colors)
+# 
 
 
 NN7$Parameter <- as.factor(paste(NN7$Tissue.Category, NN7$PhenoFrom, NN7$Distance.To, NN7$PhenoTo, sep = "_"))
@@ -158,10 +183,24 @@ NN8$Slide.ID <- as.factor(NN8$Slide.ID)
 # Spread
 NN9 <- spread(NN8, key = "Parameter", value = "Distance")
 
+
+
+droplevels(subset(df3, Slide.ID == "S028269 7B 5PLEX"))
+
+droplevels(subset(df4, Slide.ID == "S073408"))
+
+
 writeCsvO(NN9)
 NN9 <- read.csv("Output/NN9.csv")
 
 ## Make the Slide.ID the row.names
+clin <- read.csv("Data/Clinical.csv")
+NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", NN9$Slide.ID) 
+
+writeCsvO(NN9)
+
+save.image("Nahla_NN.RData")
+
 NN9a <- data.frame(NN9[, names(NN9) != "Slide.ID"], row.names = NN9[, names(NN9) == "Slide.ID"])
 NN10 <- NN9a %>% dplyr:: select(-contains("DAPI")) %>% dplyr:: select(-contains("Slide.ID")) 
 head(NN10)

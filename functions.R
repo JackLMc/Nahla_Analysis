@@ -1,6 +1,7 @@
 # FUNCTIONS
 ## Packages
 library(devtools)
+library(tidyverse)
 # devtools::install_github("PerkinElmer/phenoptr", build_vignettes = T)
 required <- c("tidyverse",
               # "fields",
@@ -127,7 +128,7 @@ preprocess_cell_seg <- function(folderoffolders, targetdir, subTdir, origindir){
   lists <- lapply(files, read.csv, header = T)
   print("Binding together")
   combined.df <- rbindlist(lists, fill = T)
-  writeCsvD(combined.df)
+  return(combined.df)
   setwd(origindir)
 }
 
@@ -207,8 +208,39 @@ clean_merged_cell_seg <- function(df){
   print("Remove Background")
   df2 <- filter(df1, Tissue.Category != "Background")
   df2a <- df2
-  print("Write cleaned data")
+  print("Return cleaned data")
   writeCsvO(df2a)
+}
+
+# cleancellseg_batch2
+clean_merged_cell_seg1 <- function(df){
+  print("Remove Columns")
+  df.combined <- df %>% 
+    dplyr:: select(-contains("TMA")) %>% 
+    dplyr::select(-matches("Lab.ID")) %>% 
+    dplyr::select(-matches("inForm.2.2.6004.14667")) %>%
+    dplyr:: select(-matches("Path")) %>%
+    dplyr::select(-matches("Distance.from.Process.Region.Edge..pixels.")) %>%
+    dplyr::select(-matches("Process.Region.ID"))%>%
+    dplyr::select(-matches("Category.Region.ID")) %>%
+    dplyr::select(-matches("Total.Cells")) %>% 
+    dplyr:: select(-contains("Autofluorescence")) %>% 
+    dplyr::select(-contains("Axis")) %>% 
+    dplyr::select(-contains("..percent")) %>% 
+    dplyr:: select(-contains("Compactness")) %>% 
+    dplyr::select(-contains("Nuclei"))
+  print("Fix Columns")
+  df.combined$Confidence <- as.numeric(sub("%", "", df.combined$Confidence, fixed = T))
+  df1 <- df.combined 
+  df1$Tissue.Category <- fix_tissue_cat(df1)
+  df1$Phenotype <- as.character(df1$Phenotype)
+  df1$Phenotype[df1$Phenotype == ""] <- "DAPI"
+  df1$Phenotype <- fix_pheno(df1)
+  print("Remove Background")
+  df2 <- filter(df1, Tissue.Category != "Background")
+  df2b <- df2
+  print("Return cleaned data")
+  writeCsvO(df2b)
 }
 
 # Read and bind
