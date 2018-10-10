@@ -4,9 +4,9 @@ source("Functions.R")
 # First batch
 # Cell_seg
 ## Set the directories
-folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports")
-targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only")
-subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Cell_seg_only/CSV")
+folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1")
+targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1/Cell_seg_only")
+subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1/Cell_seg_only/CSV")
 origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
@@ -40,9 +40,9 @@ df3 <- df2a[, c("Slide.ID", "Sample.Name", "Tissue.Category", "Phenotype", "Cell
 writeCsvO(df3)
 
 # Batch 2
-folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/chris folder FEDOR/Nahla new results/")
-targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/chris folder FEDOR/Nahla new results/Cell_seg_only")
-subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/chris folder FEDOR/Nahla new results/Cell_seg_only/CSV")
+folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2")
+targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2/Cell_seg_only")
+subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2/Cell_seg_only/CSV")
 origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
