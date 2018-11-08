@@ -46,6 +46,9 @@ NearestNeighbour_all_Cells <- NN1
 
 # writeCsvO(NearestNeighbour_all_Cells)
 NN1 <- read.csv("Output/NearestNeighbour_all_Cells.csv")
+NN1$Slide.ID <- as.factor(NN1$Slide.ID)
+NN1$Sample.Name <- as.factor(NN1$Sample.Name)
+nlevels(NN1$Slide.ID)
 
 # Gather Distance variables into column to
 NN2 <- NN1 %>% gather(contains("Distance.to"), key = "PhenoTo", value = "Distance")
@@ -54,6 +57,7 @@ that <- data.frame()
 
 c <- 1
 for(i in levels(NN1$Slide.ID)){
+  print(i)
   this <- droplevels(subset(NN1, Slide.ID == i))
   images <- nlevels(this$Sample.Name)
   that[c, "Slide"] <- i
@@ -61,7 +65,15 @@ for(i in levels(NN1$Slide.ID)){
   c <- c + 1
 }
 
-writeCsvO(that)
+# Correct that slide.IDs
+that$Slide
+that$Slide <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", that$Slide) 
+
+that1 <- that
+
+that1$Slide <- gsub(" A{1-20}| B{1-30}| JS4| C{1-20}", "", that1$Slide)
+images_per_pat <- that1
+writeCsvO(images_per_pat)
 
 # Make a unique column 
 NN2$Comb <- as.factor(paste(NN2$Tissue.Category, NN2$Phenotype, NN2$PhenoTo, NN2$Sample.Name, sep = "/"))
@@ -182,7 +194,7 @@ NN8$Slide.ID <- as.factor(NN8$Slide.ID)
 
 # Spread
 NN9 <- spread(NN8, key = "Parameter", value = "Distance")
-
+head(NN9)
 
 
 droplevels(subset(df3, Slide.ID == "S028269 7B 5PLEX"))
@@ -191,6 +203,9 @@ droplevels(subset(df4, Slide.ID == "S073408"))
 
 
 writeCsvO(NN9)
+
+####### START!
+source("Functions.R")
 NN9 <- read.csv("Output/NN9.csv")
 
 ## Make the Slide.ID the row.names
@@ -199,11 +214,129 @@ NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD6
 
 writeCsvO(NN9)
 
-save.image("Nahla_NN.RData")
+source("Functions.R")
+# Need to fix Slide.ID in NN9 so it matches the clinical data.
+NN9 <- read.csv("Output/NN9.csv")
+NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", NN9$Slide.ID) 
+NN9$Slide.ID <-trim.trailing(NN9$Slide.ID)
+writeCsvO(NN9)
 
-NN9a <- data.frame(NN9[, names(NN9) != "Slide.ID"], row.names = NN9[, names(NN9) == "Slide.ID"])
-NN10 <- NN9a %>% dplyr:: select(-contains("DAPI")) %>% dplyr:: select(-contains("Slide.ID")) 
-head(NN10)
+clin <- read.csv("New_Clin.csv")
+clin$Slide.ID <- trim.trailing(clin$Slide.ID)
+NN10 <- droplevels(merge(NN9, clin, by = "Slide.ID"))
+
+
+
+#
+library(tidyverse)
+NN11 <- NN10 %>% gather(contains("Distance.To"), key = "Parameter", value = "Distance")
+head(NN11)
+
+NN11$Parameter <- as.factor(NN11$Parameter)
+
+head(NN11)
+NN_impute <- rfImpute(ER + HER2 + Path.Response ~ ., NN11)
+View(NN11)
+
+NN12 <- na.omit(NN11)
+
+my_comparisons <- list(c("negative", "positive"))
+
+## ER
+for(i in levels(NN12$Parameter)){
+  print(i)
+  working <- droplevels(subset(NN12, Parameter == i))
+  y <- ggplot(working, aes(x = ER, y = Distance)) +
+    geom_boxplot(
+      alpha = 0.5,
+      width = 0.2) 
+  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
+                       label = "p.signif")
+  filen <- paste0(i,".png")
+  ggsave(filen, plot = temp_plot, device = "png",
+         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/ER",
+         height = 5, width = 5, units = 'in', dpi = 600)
+}
+
+## HER2
+for(i in levels(NN12$Parameter)){
+  print(i)
+  working <- droplevels(subset(NN12, Parameter == i))
+  y <- ggplot(working, aes(x = HER2, y = Distance)) +
+    geom_boxplot(
+      alpha = 0.5,
+      width = 0.2) 
+  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
+                                      label = "p.signif")
+  filen <- paste0(i,".png")
+  ggsave(filen, plot = temp_plot, device = "png",
+         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
+         height = 5, width = 5, units = 'in', dpi = 600)
+}
+
+## grade
+for(i in levels(NN12$Parameter)){
+  print(i)
+  working <- droplevels(subset(NN12, Parameter == i))
+  y <- ggplot(working, aes(x = grade, y = Distance)) +
+    geom_boxplot(
+      alpha = 0.5,
+      width = 0.2) 
+  temp_plot <- y + stat_compare_means(comparisons = list(c("1", "2"),
+                                                         c("1", "3"),
+                                                         c("2", "3")),
+                                      label = "p.signif")
+  filen <- paste0(i,".png")
+  ggsave(filen, plot = temp_plot, device = "png",
+         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/grade",
+         height = 5, width = 5, units = 'in', dpi = 600)
+}
+
+
+## Path Response
+for(i in levels(NN12$Parameter)){
+  print(i)
+  working <- droplevels(subset(NN12, Parameter == i))
+  y <- ggplot(working, aes(x = Path.Response, y = Distance)) +
+    geom_boxplot(
+      alpha = 0.5,
+      width = 0.2) 
+  temp_plot <- y + stat_compare_means(comparisons = list(c("CPR", "PPR"),
+                                                         c("CPR", "no"),
+                                                         c("PPR", "no")),
+                                      label = "p.signif")
+  filen <- paste0(i,".png")
+  ggsave(filen, plot = temp_plot, device = "png",
+         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/Path.Response",
+         height = 5, width = 5, units = 'in', dpi = 600)
+}
+
+# Survival analysis
+library(survival)
+library(survminer)
+
+NN12$OS_STATUS <- ifelse((NN12$Dead == "alive"), T, F)
+
+for(i in levels(NN12$Parameter)){
+  print(i)
+  setwd("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/Survival/")
+  working <- droplevels(subset(NN12, Parameter == i))
+  med <- median(working$Distance)
+  working$Category <- ifelse((working$Distance >= med), "High", "Low")
+  os.surv.fit <- survfit(Surv(survival, OS_STATUS) ~ Category,
+                         data = working)
+  filen <- paste0(i,".png")
+  png(filen, width = 480, height = 480)
+  print(ggsurvplot(os.surv.fit, data = working, risk.table = F, pval = T))
+  dev.off()
+}
+
+
+#
+NN9a <- data.frame(NN10[, names(NN10) != "Slide.ID"], row.names = NN10[, names(NN10) == "Slide.ID"])
+library(dplyr)
+NN11 <- NN9a %>% dplyr:: select(-contains("DAPI")) %>% dplyr:: select(-contains("Slide.ID")) 
+head(NN11)
 
 NN_impute <- na.omit(NN10)
 # randomForest imputing
@@ -221,9 +354,14 @@ model <- bayesglm(Subtype ~., family = binomial (link = 'logit'), data = NN_impu
 display(model)
 
 
+
+
+
 # PCA
 ### Complete PCA
-prin_comp <- prcomp(NN_impute, scale. = T)
+head(NN11)
+
+prin_comp <- prcomp(NN11, scale. = T)
 plot(prin_comp)
 
 Subtype <- NN_impute[, "Subtype"]
