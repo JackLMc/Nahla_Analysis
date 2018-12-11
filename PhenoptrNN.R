@@ -205,16 +205,16 @@ droplevels(subset(df4, Slide.ID == "S073408"))
 writeCsvO(NN9)
 
 ####### START!
-source("Functions.R")
-NN9 <- read.csv("Output/NN9.csv")
-
-## Make the Slide.ID the row.names
-clin <- read.csv("Data/Clinical.csv")
-NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", NN9$Slide.ID) 
-
-writeCsvO(NN9)
-
-source("Functions.R")
+# source("Functions.R")
+# NN9 <- read.csv("Output/NN9.csv")
+# 
+# ## Make the Slide.ID the row.names
+# clin <- read.csv("Data/Clinical.csv")
+# NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", NN9$Slide.ID) 
+# 
+# writeCsvO(NN9)
+# 
+# source("Functions.R")
 # Need to fix Slide.ID in NN9 so it matches the clinical data.
 NN9 <- read.csv("Output/NN9.csv")
 NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", NN9$Slide.ID) 
@@ -235,8 +235,8 @@ head(NN11)
 NN11$Parameter <- as.factor(NN11$Parameter)
 
 head(NN11)
-NN_impute <- rfImpute(ER + HER2 + Path.Response ~ ., NN11)
-View(NN11)
+# NN_impute <- rfImpute(ER + HER2 + Path.Response ~ ., NN11)
+# View(NN11)
 
 NN12 <- na.omit(NN11)
 
@@ -258,6 +258,19 @@ for(i in levels(NN12$Parameter)){
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
+ER <- list()
+for(i in levels(NN12$Parameter)){
+  print(i)
+  work <- droplevels(subset(NN12, Parameter == i))
+  x <- compare_means(Distance ~ ER, data = work, method = "wilcox.test")
+  ER[[i]] <- x
+}
+ER1 = do.call(rbind, ER)
+ER1$id <- rep(names(ER), sapply(ER, nrow))
+
+write.csv(ER1, file = "./Output/Stats/ER_stats.csv")
+
+
 ## HER2
 for(i in levels(NN12$Parameter)){
   print(i)
@@ -273,6 +286,20 @@ for(i in levels(NN12$Parameter)){
          path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
+
+
+HER2 <- list()
+for(i in levels(NN12$Parameter)){
+  print(i)
+  work <- droplevels(subset(NN12, Parameter == i))
+  x <- compare_means(Distance ~ HER2, data = work, method = "wilcox.test")
+  HER2[[i]] <- x
+}
+HER2a = do.call(rbind, HER2)
+
+HER2a$id <- rep(names(HER2), sapply(HER2, nrow))
+write.csv(HER2a, file = "./Output/Stats/HER2_stats.csv")
+
 
 ## grade
 for(i in levels(NN12$Parameter)){
@@ -292,6 +319,18 @@ for(i in levels(NN12$Parameter)){
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
+grade <- list()
+for(i in levels(NN12$Parameter)){
+  print(i)
+  work <- droplevels(subset(NN12, Parameter == i))
+  x <- compare_means(Distance ~ grade, data = work, method = "wilcox.test")
+  grade[[i]] <- x
+}
+grade1 = do.call(rbind, grade)
+grade1$id <- rep(names(grade), sapply(grade, nrow))
+
+write.csv(grade1, file = "./Output/Stats/grade_stats.csv")
+
 
 ## Path Response
 for(i in levels(NN12$Parameter)){
@@ -310,6 +349,18 @@ for(i in levels(NN12$Parameter)){
          path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/Path.Response",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
+
+PResp <- list()
+for(i in levels(NN12$Parameter)){
+  print(i)
+  work <- droplevels(subset(NN12, Parameter == i))
+  x <- compare_means(Distance ~ Path.Response, data = work, method = "wilcox.test")
+  PResp[[i]] <- x
+}
+PResp1 = do.call(rbind, PResp)
+PResp1$id <- rep(names(PResp), sapply(PResp, nrow))
+
+write.csv(PResp1, file = "./Output/Stats/PResp_stats.csv")
 
 # Survival analysis
 library(survival)
