@@ -28,6 +28,9 @@ for (lib in required)
 }
 
 # Comparisons and Colours
+"%!in%" <- function(x,y)!('%in%'(x,y))
+
+
 cbcols <- c("Type1" = "#999999",
             "Type2" = "#56B4E9",
             "Type3" = "#E69F00",
@@ -327,6 +330,13 @@ factorthese <- function(df, somecolumns){
 # Trim whitespace
 trim <- function (x){
   gsub("^\\s+|\\s+$", "", x)}
+
+# returns string w/o leading whitespace
+trim.leading <- function (x)  sub("^\\s+", "", x)
+
+# returns string w/o trailing whitespace
+trim.trailing <- function (x) sub("\\s+$", "", x)
+
 
 # Convert CSV to TSV
 csvtotsv <- function(bp, op){
