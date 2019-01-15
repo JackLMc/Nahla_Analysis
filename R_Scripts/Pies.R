@@ -88,3 +88,30 @@ bp <- bp + scale_fill_manual(values = cols)
 
 ggsave("OS_pie.pdf", plot = bp, device = "pdf",
        path = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Paper/")
+
+
+# Overall Survival
+path_percents <- data.frame(stringsAsFactors = F)
+c <- 1
+clin$Path.Response <- as.factor(clin$Path.Response)
+for(i in levels(clin$Path.Response)){
+  work <- droplevels(subset(clin, Path.Response == i))
+  number <- nrow(work)
+  path_percents[c, "path_"] <- i
+  path_percents[c, "number_of_pats"] <- number
+  c <- c + 1
+}
+
+library(tidyverse)
+bp <- ggplot(path_percents, aes(x="", y = number_of_pats, fill = path_))+
+  geom_bar(width = 1, stat = "identity")
+
+bp <- bp + coord_polar("y", start = 0)
+bp <- bp + theme_blank() + theme(axis.text.x = element_blank()) 
+
+
+cols <- c("PPR" = "#009E73", "no" = "#F0E442", "CPR" = "#D55E00")
+bp <- bp + scale_fill_manual(values = cols)
+
+ggsave("Path_pie.pdf", plot = bp, device = "pdf",
+       path = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Paper/")
