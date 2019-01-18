@@ -1,38 +1,39 @@
-# Source Functions.R for packages and Functions
-source("Functions.R")
-
+# Source Functions + Packages
+library(UsefulFunctions)
+library(tidyverse)
+library(data.table)
+library(phenoptr)
 # Search for NN9 if already previously ran
 
 # NEAREST NEIGHBOUR
 ## Convert old DF to a tsv file
-csvtotsv("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/df3.csv",
-         "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
+### Batch 1
+csvtotsv("./Output/Batch1_single.csv",
+         "./Output/NN/Batch1_single.tsv")
 
-## Calculate distances
-NearNeigh <- compute_all_nearest_distance("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF1_tab.tsv")
-writeCsvO(NearNeigh)
+#### Calculate distances
+NearNeigh <- compute_all_nearest_distance("./Output/NN/Batch1_single.tsv")
+write.csv(file = "./Output/Batch1_NN.csv", x = NearNeigh, row.names = F)
 
+### Batch 2
+csvtotsv("./Output/Batch2_single.csv",
+         "./Output/NN/Batch2_single.tsv")
 
-csvtotsv("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/df4.csv",
-         "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF2_tab.tsv")
-
-## Calculate distances
-NearNeigh1 <- compute_all_nearest_distance("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Output/NN/DF2_tab.tsv")
-writeCsvO(NearNeigh1)
+#### Calculate distances
+NearNeigh1 <- compute_all_nearest_distance("./Output/NN/Batch2_single.tsv")
+write.csv(file = "./Output/Batch2_NN.csv", x = NearNeigh1, row.names = F)
 
 # Write a TSV or a CSV?
-# write.table(NearNeigh, file = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Output/NN/NearNeigh.tsv", row.names = F, sep = "\t")
-# writeCsvO(NearNeigh)
 # Actually have to read this in, else it's as a tibble
-NearNeigh <- read.csv("Output/NearNeigh.csv")
-NearNeigh1 <- read.csv("Output/NearNeigh1.csv")
+Batch1_NN <- read.csv("Output/Batch1_NN.csv")
+Batch2_NN <- read.csv("Output/Batch2_NN.csv")
 
 # Remove stuff that doesn't matter anymore
-NearNeigh$tag <- as.character(NearNeigh$tag)
-NearNeigh1$tag <- as.character(NearNeigh1$tag)
-NN <- rbind(NearNeigh, NearNeigh1)
-writeCsvO(NN)
+Batch1_NN$tag <- as.character(Batch1_NN$tag)
+Batch2_NN$tag <- as.character(Batch2_NN$tag)
+NN <- rbind(Batch1_NN, Batch2_NN)
 
+write.csv(file = "./Output/Nearest_Neighbour_Start.csv", x = NN, row.names = F)
 drop <- c("tag",
           "Cell.ID",
           "Cell.X.Position",
@@ -42,10 +43,6 @@ drop <- c("tag",
           "Batch",
           "Distance.from.Tissue.Category.Edge..microns")
 NN1 <- droplevels(NN[,!(names(NN) %in% drop)])
-NearestNeighbour_all_Cells <- NN1
-
-# writeCsvO(NearestNeighbour_all_Cells)
-NN1 <- read.csv("Output/NearestNeighbour_all_Cells.csv")
 NN1$Slide.ID <- as.factor(NN1$Slide.ID)
 NN1$Sample.Name <- as.factor(NN1$Sample.Name)
 nlevels(NN1$Slide.ID)
@@ -53,29 +50,10 @@ nlevels(NN1$Slide.ID)
 # Gather Distance variables into column to
 NN2 <- NN1 %>% gather(contains("Distance.to"), key = "PhenoTo", value = "Distance")
 
-that <- data.frame()
-
-c <- 1
-for(i in levels(NN1$Slide.ID)){
-  print(i)
-  this <- droplevels(subset(NN1, Slide.ID == i))
-  images <- nlevels(this$Sample.Name)
-  that[c, "Slide"] <- i
-  that[c, "images"] <- images
-  c <- c + 1
-}
-
-# Correct that slide.IDs
-that$Slide
+# Make a unique column 
+head(NN2)
 that$Slide <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", that$Slide) 
 
-that1 <- that
-
-that1$Slide <- gsub(" A{1-20}| B{1-30}| JS4| C{1-20}", "", that1$Slide)
-images_per_pat <- that1
-writeCsvO(images_per_pat)
-
-# Make a unique column 
 NN2$Comb <- as.factor(paste(NN2$Tissue.Category, NN2$Phenotype, NN2$PhenoTo, NN2$Sample.Name, sep = "/"))
 
 # Make two columns of pheno from and pheno to
@@ -159,15 +137,15 @@ NN7 <- NN6a %>%
 Mean_NearNeigh_per_Slide <- NN7
 writeCsvO(Mean_NearNeigh_per_Slide)
 
-# cell_seg_path <- c("/Users/jlm650/Desktop/")
+# cell_seg_path <- c("/Users/JackMcMurray/Desktop/")
 # Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
 # pairs <- find_pheno_comb(Phenotypes)
 # 
 # out_path <- path.expand('~/spatial_distribution_report.html')
 # 
 # spatial_distribution_report(cell_seg_path, pairs, output_path=out_path)
-# base_path <- '/Users/jlm650/Desktop/8-B 10-5866/'
-# setwd("/Users/jlm650/Desktop/8-B 10-5866/")
+# base_path <- '/Users/JackMcMurray/Desktop/8-B 10-5866/'
+# setwd("/Users/JackMcMurray/Desktop/8-B 10-5866/")
 # colors <- c('CD4'='#999999',
 #             'CD8'='#E69F00',
 #             'CD20' = '#56B4E9',
@@ -263,7 +241,7 @@ for(i in levels(NN12$Parameter)){
                        label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/ER",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/ER",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -292,7 +270,7 @@ for(i in levels(NN12$Parameter)){
                                       label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -324,7 +302,7 @@ for(i in levels(NN12$Parameter)){
                                       label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/grade",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/grade",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -355,7 +333,7 @@ for(i in levels(NN12$Parameter)){
                                       label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/Path.Response",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Path.Response",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -379,7 +357,7 @@ NN12$OS_STATUS <- ifelse((NN12$Dead == "alive"), T, F)
 
 for(i in levels(NN12$Parameter)){
   print(i)
-  setwd("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/Survival/")
+  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Survival/")
   working <- droplevels(subset(NN12, Parameter == i))
   med <- median(working$Distance)
   working$Category <- ifelse((working$Distance >= med), "High", "Low")
@@ -439,7 +417,7 @@ for(i in levels(NN12$Parameter)){
                                       label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/pos_neg",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/pos_neg",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -476,7 +454,7 @@ for(i in levels(NN12$Parameter)){
                                       label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/score",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/score",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -509,7 +487,7 @@ for(i in levels(NN12$Parameter)){
                                       label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/pos_neg",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/pos_neg",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -547,7 +525,7 @@ for(i in levels(NN12$Parameter)){
                                       label = "p.signif")
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/score",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/score",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -617,7 +595,7 @@ g <- g + theme(legend.direction = 'horizontal',
 g <- g + ggtitle("PCA of the Mean Nearest Distance Between Immune Subsets")
 g
 ggsave("PCA of Nearest Neighbour.png" , plot = g, device = "png",
-       path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
+       path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
        height = 6, width = 6, units = 'in', dpi = 600)
 
 
@@ -646,7 +624,7 @@ for(i in levels(PC_NN3$Component)){
   temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
+         path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
          height=5, width=5, units='in', dpi=600)
 }
 
