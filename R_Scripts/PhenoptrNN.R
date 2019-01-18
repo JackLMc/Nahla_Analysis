@@ -92,7 +92,7 @@ NN6 <- NN4
 # c <- 1
 # for(i in levels(NN5$Comb)){
 #   name <- basename(i)
-#   cat('Processing', i, '\n')
+#   cat("Processing", i, "\n")
 #   df <- droplevels(subset(NN5, Comb == i))
 #   y <- mean(df$Distance, na.rm = T)
 #   output[c, "Comb"] <- i
@@ -114,7 +114,7 @@ NN6a <- data.frame(Parameter = character(),
 c <- 1
 for(i in levels(NN6$Parameter)){
   name <- basename(i)
-  cat('Processing', i, '\n')
+  cat("Processing", i, "\n")
   df <- droplevels(subset(NN6, Parameter == i))
   y <- mean(df$Distance, na.rm = T)
   NN6a[c, "Parameter"] <- i
@@ -124,23 +124,21 @@ for(i in levels(NN6$Parameter)){
 # Remove Slide.ID from combined Parameter column
 NN7 <- NN6a %>%
   separate(Parameter, c("Tissue.Category", "PhenoFrom","Distance.To", "PhenoTo", "Slide.ID"), "/")
-write.csv(file = "./Output/Mean_NearNeigh_per_Slide.csv", x = NN7, row.names = F)
-
 # cell_seg_path <- c("/Users/JackMcMurray/Desktop/")
 # Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
 # pairs <- find_pheno_comb(Phenotypes)
 # 
-# out_path <- path.expand('~/spatial_distribution_report.html')
+# out_path <- path.expand("~/spatial_distribution_report.html")
 # 
 # spatial_distribution_report(cell_seg_path, pairs, output_path=out_path)
-# base_path <- '/Users/JackMcMurray/Desktop/8-B 10-5866/'
+# base_path <- "/Users/JackMcMurray/Desktop/8-B 10-5866/"
 # setwd("/Users/JackMcMurray/Desktop/8-B 10-5866/")
-# colors <- c('CD4'='#999999',
-#             'CD8'='#E69F00',
-#             'CD20' = '#56B4E9',
-#             'CD68' = '#009E73',
-#             'FOXP3' = '#F0E442',
-#             'DAPI' = '#0072B2')
+# colors <- c("CD4"="#999999",
+#             "CD8"="#E69F00",
+#             "CD20" = "#56B4E9",
+#             "CD68" = "#009E73",
+#             "FOXP3" = "#F0E442",
+#             "DAPI" = "#0072B2")
 # 
 # 
 # paths <- list_cell_seg_files(base_path)
@@ -170,20 +168,24 @@ library(tidyverse)
 library(data.table)
 library(phenoptr)
 
-# Need to fix Slide.ID in NN9 so it matches the clinical data.
+# Read in data for comparisons
 NN9 <- read.csv("Output/Clean_Nearest_Neighbour.csv")
-# writeCsvO(NN9)
-
 clin <- read.csv("Data/New_Clin.csv")
 clin$Slide.ID <- trim.trailing(clin$Slide.ID)
 
 TSPAN <- read.csv("Data/TSPAN6.csv")
 TSPAN$Slide.ID <- trim.trailing(TSPAN$Slide.ID)
-TSPAN <- TSPAN[, c(1, 22:25)]
+TSPAN <- TSPAN[, c("Slide.ID", "Tetraspanin.6.score..membrane.",
+                   "positive.vs.negative.membranous",
+                   "Tetraspanin.6.score.cytoplasm.",
+                   "Tspan.6.cytoplasm")]
+
 # TSPAN$Slide.ID[!('%in%' (TSPAN$Slide.ID, try$Slide.ID))]
 
+clin$Slide.ID[!('%in%' (clin$Slide.ID, NN9$Slide.ID))]
+# BRCBX 125006433 not in NN9
 
-
+# Merge with Clinical data
 NN10 <- droplevels(merge(NN9, clin, by = "Slide.ID"))
 length(NN10$Slide.ID)
 length(NN9$Slide.ID)
@@ -191,14 +193,7 @@ length(NN9$Slide.ID)
 #
 library(tidyverse)
 NN11 <- NN10 %>% gather(contains("Distance.To"), key = "Parameter", value = "Distance")
-head(NN11)
-
 NN11$Parameter <- as.factor(NN11$Parameter)
-
-head(NN11)
-# NN_impute <- rfImpute(ER + HER2 + Path.Response ~ ., NN11)
-# View(NN11)
-
 NN12 <- na.omit(NN11)
 
 my_comparisons <- list(c("negative", "positive"))
@@ -216,7 +211,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/ER",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 ER <- list()
@@ -245,7 +240,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 
@@ -277,7 +272,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/grade",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 grade <- list()
@@ -308,7 +303,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Path.Response",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 PResp <- list()
@@ -392,7 +387,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/pos_neg",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 TSPAN <- list()
@@ -429,7 +424,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/score",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 TSPAN <- list()
@@ -462,7 +457,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/pos_neg",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 TSPAN <- list()
@@ -500,7 +495,7 @@ for(i in levels(NN12$Parameter)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/score",
-         height = 5, width = 5, units = 'in', dpi = 600)
+         height = 5, width = 5, units = "in", dpi = 600)
 }
 
 TSPAN <- list()
@@ -539,11 +534,11 @@ NN_impute <- rfImpute(Subtype ~ ., NN10)
 # writeCsvO(NN_impute)
 
 # Logistic Regression
-corrplot(cor(NN_impute[, names(NN_impute) != "Subtype"]), type = 'lower')
+corrplot(cor(NN_impute[, names(NN_impute) != "Subtype"]), type = "lower")
 
 NN_impute$Subtype <- as.factor(NN_impute$Subtype)
 library(arm)
-model <- bayesglm(Subtype ~., family = binomial (link = 'logit'), data = NN_impute)
+model <- bayesglm(Subtype ~., family = binomial (link = "logit"), data = NN_impute)
 display(model)
 
 
@@ -564,13 +559,13 @@ g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, ellipse = T,
 )
 g <- g + scale_color_manual(values = cbcols)
 g <- g + theme_bw()
-g <- g + theme(legend.direction = 'horizontal', 
-               legend.position = 'top')
+g <- g + theme(legend.direction = "horizontal", 
+               legend.position = "top")
 g <- g + ggtitle("PCA of the Mean Nearest Distance Between Immune Subsets")
 g
 ggsave("PCA of Nearest Neighbour.png" , plot = g, device = "png",
        path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
-       height = 6, width = 6, units = 'in', dpi = 600)
+       height = 6, width = 6, units = "in", dpi = 600)
 
 
 # Store the contribution to each PC
@@ -591,7 +586,7 @@ PC_NN3$Rank <- rank(PC_NN3$ComponentScore)
 # Plot
 for(i in levels(PC_NN3$Component)){
   name <- basename(i)
-  cat('Processing', i, '\n')
+  cat("Processing", i, "\n")
   Chosen <- droplevels(subset(PC_NN3, Component == i))
   YTitle <- paste0("Rank of ", i)
   MainTitle <- paste0("Violin plot of ", i)
@@ -599,7 +594,7 @@ for(i in levels(PC_NN3$Component)){
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
          path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Extra/Nahla_Analysis/Figures/NearestNeighbour",
-         height=5, width=5, units='in', dpi=600)
+         height=5, width=5, units="in", dpi=600)
 }
 
 #
