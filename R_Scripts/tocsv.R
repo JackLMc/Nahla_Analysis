@@ -9,11 +9,11 @@ library(data.table)
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1")
 targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1/Cell_seg_only")
 subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1/Cell_seg_only/CSV")
-origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
+origindir <- c("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
 combined.df <- preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
-write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Data/Batch1_single.csv", x = combined.df, row.names = F)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Data/Batch1_single.csv", x = combined.df, row.names = F)
 
 # Write to allow reading
 setwd(origindir)
@@ -21,13 +21,13 @@ Batch1_single <- read.csv("Data/Batch1_single.csv")
 
 df1 <- clean_merged_cell_seg(Batch1_single)
 Batch1_single <- df1[, c("Slide.ID", "Sample.Name", "Tissue.Category", "Phenotype", "Cell.ID", "Cell.X.Position", "Cell.Y.Position")]
-write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch1_single.csv", x = Batch1_single, row.names = F)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch1_single.csv", x = Batch1_single, row.names = F)
 
 # Batch 2
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2")
 targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2/Cell_seg_only")
 subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2/Cell_seg_only/CSV")
-origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
+origindir <- c("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
 combined.df <- preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindir)
@@ -38,7 +38,7 @@ Batch2_single <- read.csv("Data/Batch2_single.csv")
 
 df1 <- clean_merged_cell_seg(Batch2_single)
 Batch2_single <- df1[, c("Slide.ID", "Sample.Name", "Tissue.Category", "Phenotype", "Cell.ID", "Cell.X.Position", "Cell.Y.Position")]
-write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch2_single.csv", x = Batch2_single, row.names = F)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch2_single.csv", x = Batch2_single, row.names = F)
 
 # Number of images per slide (cell seg)
 # CD1a <- factorthese(Batch1_single, c("Sample.Name", "Tissue.Category", "Slide.ID", "Phenotype"))
@@ -72,7 +72,7 @@ write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis
 # }
 # 
 # single_pics <- rbind(Number_of_Images_CS, Number_of_Images)
-# write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Single_pic_check.csv", x = single_pics, row.names = F)
+# write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Single_pic_check.csv", x = single_pics, row.names = F)
 
 
 # Source Functions + Packages
@@ -86,11 +86,11 @@ library(data.table)
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1")
 targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1/Cell_seg_summary_only")
 subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_1/Cell_seg_summary_only/CSV")
-origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
+origindir <- c("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
 combined.df <- preprocess_cell_seg_summary(folderoffolders, targetdir, subTdir, origindir)
-write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Data/Batch1_summary.csv", x = combined.df, row.names = F)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Data/Batch1_summary.csv", x = combined.df, row.names = F)
 
 # Write to allow reading
 Batch1_summary <- read.csv("Data/Batch1_summary.csv")
@@ -106,17 +106,17 @@ df1$Phenotype <- fix_pheno(df1)
 df2 <- filter(df1, Tissue.Category != "Background")
 
 Batch1_summary <- df2
-write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch1_summary.csv", x = Batch1_summary, row.names = F)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch1_summary.csv", x = Batch1_summary, row.names = F)
 
 # Batch 2
 folderoffolders <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2")
 targetdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2/Cell_seg_summary_only")
 subTdir <- c("/Volumes/ResearchData/Vectra/Vectra3/Fedor/nahla/Exports/Batch_2/Cell_seg_summary_only/CSV")
-origindir <- c("/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
+origindir <- c("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/")
 
 # Preprocess the folders, convert .txt to .csv and bind all
 combined.df <- preprocess_cell_seg_summary(folderoffolders, targetdir, subTdir, origindir)
-write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Data/Batch2_summary.csv", x = combined.df, row.names = F)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Data/Batch2_summary.csv", x = combined.df, row.names = F)
 
 # Write to allow reading
 Batch2_summary <- read.csv("Data/Batch2_summary.csv")
@@ -132,13 +132,13 @@ df1$Phenotype <- fix_pheno(df1)
 df2 <- filter(df1, Tissue.Category != "Background")
 
 Batch2_summary <- df2
-write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch2_summary.csv", x = Batch2_summary, row.names = F)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch2_summary.csv", x = Batch2_summary, row.names = F)
 
 
 
 # Bind into big summary file
 summary <- rbind(Batch1_summary, Batch2_summary)
-write.csv("/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Summary_data.csv", x = summary)
+write.csv("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Summary_data.csv", x = summary)
 
 
 # Number of images per slide (summary)
@@ -157,5 +157,5 @@ write.csv("/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output
 #   c <- c + 1
 # }
 # 
-# write.csv(file = "/Users/jlm650/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Summary_pic_check.csv", x = Number_of_Images, row.names = F)
+# write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Summary_pic_check.csv", x = Number_of_Images, row.names = F)
 
