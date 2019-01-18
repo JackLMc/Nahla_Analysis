@@ -51,9 +51,6 @@ nlevels(NN1$Slide.ID)
 NN2 <- NN1 %>% gather(contains("Distance.to"), key = "PhenoTo", value = "Distance")
 
 # Make a unique column 
-head(NN2)
-that$Slide <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", that$Slide) 
-
 NN2$Comb <- as.factor(paste(NN2$Tissue.Category, NN2$Phenotype, NN2$PhenoTo, NN2$Sample.Name, sep = "/"))
 
 # Make two columns of pheno from and pheno to
@@ -77,12 +74,6 @@ NN4$PhenoFrom <- gsub(" ", ".", NN4$PhenoFrom)
 ## Remove rows where either PhenoTo or PhenoFrom is DAPI
 NN4$PhenoTo <- as.factor(NN4$PhenoTo)
 NN4$PhenoFrom <- as.factor(NN4$PhenoFrom)
-
-# NN4a <- droplevels(subset(NN4, PhenoTo != "DAPI"))
-# NN5 <- droplevels(subset(NN4a, PhenoFrom != "DAPI"))
-# 
-# NearestNeighbour_no_DAPI_relationships <- NN5
-# writeCsvO(NearestNeighbour_no_DAPI_relationships)
 NN6 <- NN4
 
 # # Paste back together
@@ -133,9 +124,7 @@ for(i in levels(NN6$Parameter)){
 # Remove Slide.ID from combined Parameter column
 NN7 <- NN6a %>%
   separate(Parameter, c("Tissue.Category", "PhenoFrom","Distance.To", "PhenoTo", "Slide.ID"), "/")
-
-Mean_NearNeigh_per_Slide <- NN7
-writeCsvO(Mean_NearNeigh_per_Slide)
+write.csv(file = "./Output/Mean_NearNeigh_per_Slide.csv", x = NN7, row.names = F)
 
 # cell_seg_path <- c("/Users/JackMcMurray/Desktop/")
 # Phenotypes <- c("CD4", "CD8", "CD20", "CD68", "FOXP3", "DAPI")
@@ -157,8 +146,6 @@ writeCsvO(Mean_NearNeigh_per_Slide)
 # paths <- list_cell_seg_files(base_path)
 # for (path in paths)
 #   spatial_distribution_report(path, pairs, colors)
-# 
-
 
 NN7$Parameter <- as.factor(paste(NN7$Tissue.Category, NN7$PhenoFrom, NN7$Distance.To, NN7$PhenoTo, sep = "_"))
 
@@ -172,32 +159,19 @@ NN8$Slide.ID <- as.factor(NN8$Slide.ID)
 
 # Spread
 NN9 <- spread(NN8, key = "Parameter", value = "Distance")
-head(NN9)
-
-
-droplevels(subset(df3, Slide.ID == "S028269 7B 5PLEX"))
-
-droplevels(subset(df4, Slide.ID == "S073408"))
-
-
-writeCsvO(NN9)
-
-####### START!
-# source("Functions.R")
-# NN9 <- read.csv("Output/NN9.csv")
-# 
-# ## Make the Slide.ID the row.names
-# clin <- read.csv("Data/Clinical.csv")
-# NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", NN9$Slide.ID) 
-# 
-# writeCsvO(NN9)
-# 
-# source("Functions.R")
-# Need to fix Slide.ID in NN9 so it matches the clinical data.
-library(UsefulFunctions)
-NN9 <- read.csv("Output/NN9.csv")
 NN9$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", NN9$Slide.ID) 
 NN9$Slide.ID <-trim.trailing(NN9$Slide.ID)
+
+write.csv("./Output/Clean_Nearest_Neighbour.csv", x = NN9, row.names = F)
+
+####### START!
+library(UsefulFunctions)
+library(tidyverse)
+library(data.table)
+library(phenoptr)
+
+# Need to fix Slide.ID in NN9 so it matches the clinical data.
+NN9 <- read.csv("Output/Clean_Nearest_Neighbour.csv")
 # writeCsvO(NN9)
 
 clin <- read.csv("Data/New_Clin.csv")
@@ -255,7 +229,7 @@ for(i in levels(NN12$Parameter)){
 ER1 = do.call(rbind, ER)
 ER1$id <- rep(names(ER), sapply(ER, nrow))
 
-write.csv(ER1, file = "./Output/Stats/ER_stats.csv")
+write.csv(ER1, file = "./Output/Stats/ER_stats.csv", row.names = F)
 
 
 ## HER2
@@ -285,7 +259,7 @@ for(i in levels(NN12$Parameter)){
 HER2a = do.call(rbind, HER2)
 
 HER2a$id <- rep(names(HER2), sapply(HER2, nrow))
-write.csv(HER2a, file = "./Output/Stats/HER2_stats.csv")
+write.csv(HER2a, file = "./Output/Stats/HER2_stats.csv", row.names = F)
 
 
 ## grade
@@ -316,7 +290,7 @@ for(i in levels(NN12$Parameter)){
 grade1 = do.call(rbind, grade)
 grade1$id <- rep(names(grade), sapply(grade, nrow))
 
-write.csv(grade1, file = "./Output/Stats/grade_stats.csv")
+write.csv(grade1, file = "./Output/Stats/grade_stats.csv", row.names = F)
 
 
 ## Path Response
@@ -347,7 +321,7 @@ for(i in levels(NN12$Parameter)){
 PResp1 = do.call(rbind, PResp)
 PResp1$id <- rep(names(PResp), sapply(PResp, nrow))
 
-write.csv(PResp1, file = "./Output/Stats/PResp_stats.csv")
+write.csv(PResp1, file = "./Output/Stats/PResp_stats.csv", row.names = F)
 
 # Survival analysis
 library(survival)
@@ -431,7 +405,7 @@ for(i in levels(NN12$Parameter)){
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_membrane_stats.csv")
+write.csv(TSPAN1, file = "./Output/Stats/TSPAN_membrane_stats.csv", row.names = F)
 
 #### Score
 my_comparisons <- list(c("0", "1"),
@@ -468,7 +442,7 @@ for(i in levels(NN12$Parameter)){
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_membrane_score_stats.csv")
+write.csv(TSPAN1, file = "./Output/Stats/TSPAN_membrane_score_stats.csv", row.names = F)
 
 
 head(NN12)
@@ -501,7 +475,7 @@ for(i in levels(NN12$Parameter)){
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_cytoplasm_stats.csv")
+write.csv(TSPAN1, file = "./Output/Stats/TSPAN_cytoplasm_stats.csv", row.names = F)
 
 #### Score
 range(NN12$Tetraspanin.6.score.cytoplasm.)
@@ -539,7 +513,7 @@ for(i in levels(NN12$Parameter)){
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_cytoplasm_score_stats.csv")
+write.csv(TSPAN1, file = "./Output/Stats/TSPAN_cytoplasm_score_stats.csv", row.names = F)
 
 
 
