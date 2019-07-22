@@ -170,8 +170,12 @@ library(phenoptr)
 
 # Read in data for comparisons
 NN9 <- read.csv("Output/Clean_Nearest_Neighbour.csv")
-clin <- read.csv("Data/New_Clin.csv")
+clin <- read.csv("Data/Nahla_clinical.csv")
+colnames(clin)[colnames(clin) == "Lablels.as.in.inform.cases"] <- "Slide.ID"
+
 clin$Slide.ID <- trim.trailing(clin$Slide.ID)
+
+
 
 TSPAN <- read.csv("Data/TSPAN6.csv")
 TSPAN$Slide.ID <- trim.trailing(TSPAN$Slide.ID)
@@ -724,4 +728,31 @@ ggplot(NNI6, aes(`hiCIRC_Epithelium_CD4`, color=PhenoFrom)) +
 
 
 
+
+
+head(NN12)
+NN12a <- NN12[, c("Slide.ID", "Parameter", "Distance", "grade", "ER", "HER2", "Path.Response")]
+NN13 <- spread(NN12a, key = "Parameter", value = "Distance")
+pca1 <- column_to_rownames(NN13, var = "Slide.ID")
+
+
+
+
+
+prin_comp <- prcomp(pca1[, names(pca1) != "grade" & names(pca1) != "HER2" & names(pca1) != "ER" & names(pca1) != "Path.Response"], scale. = T)
+Subtype <- pca1[, "grade"]
+
+library(ggbiplot)
+g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, 
+              groups = Subtype, ellipse = T,
+              circle = T,
+              var.axes = F,
+              choices = c(1,2)
+)
+
+
+g <- g + scale_color_manual(values = cbcols)
+g <- g + theme_bw()
+g <- g + theme(legend.direction = 'horizontal', 
+               legend.position = 'top')
 

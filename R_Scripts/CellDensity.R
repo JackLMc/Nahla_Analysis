@@ -1,8 +1,10 @@
-# Source Functions.R for packages and Functions
-source("Functions.R")
+# Source Functions + Packages
+library(UsefulFunctions)
+library(tidyverse)
+library(data.table)
 
 # Read data / source("tocsv.R)
-cell_seg_summary <- read.csv("Data/combined_summary_df.csv")
+cell_seg_summary <- read.csv("Output/Summary_data.csv")
 cell_seg_summary$Tissue.Category <- as.factor(cell_seg_summary$Tissue.Category)
 
 # Remove unneeded stuff
@@ -24,12 +26,84 @@ CS1b$Phenotype <- as.factor(CS1b$Phenotype)
 CS1b$uniq <- as.factor(paste(CS1b$Slide.ID, CS1b$Tissue.Category, CS1b$Phenotype, sep = "/"))
 CS1c <- CS1b
 
+CS1c[is.na(CS1c$Total.Cells)] <- 0
+CS1c$Total.Cells <- as.numeric(CS1c$Total.Cells)
+
+
+output <- data.frame(Combine = character(),
+                     Total.Cells = double(),
+                     stringsAsFactors = FALSE)
+
+c <- 1
+for(i in levels(CS1c$uniq)){
+  print(paste("Working on:", i))
+  Working <- droplevels(subset(CS1c, uniq == i))
+  TotalC <- sum(Working$Total.Cells)
+  output[c, "Combine"] <- i
+  output[c, "Total.Cells"] <- TotalC
+  c <- c + 1}
+
+
+head(output)
+
+
+
+#### Check for missing phenotypes from pictures and create dataframe
+# List missing phenotypes from pictures
+missing_pheno <- list()
+
+for(i in levels(CS1b$Sample.Name)){
+  work <- droplevels(subset(CS1b, Sample.Name == i))
+  pat_pheno <- as.character(levels(work$Phenotype))
+  all_pheno <- as.character(levels(CS1b$Phenotype))
+  see <- all_pheno[!(all_pheno %in% pat_pheno)]
+  missing <- ifelse((see != 0), c(see), "None")
+  missing_pheno[[i]] <- missing
+}
+
+# Create dataframe and change column names
+missing_df <- plyr::ldply(missing_pheno, data.frame)
+colnames(missing_df) <- c("Sample.Name", "Phenotype")
+head(missing_df)
+# Replicate each element three times (each tissue.category - All, Epi, Stroma)
+df.expanded <- missing_df[rep(seq_len(nrow(missing_df)), each = 3),]
+Tissue.Category <- c("All", "Epithelium", "Stroma")
+Cell.Density..per.megapixel. <- 0 
+Total.Cells <- 0
+missing_data <- as.data.frame(cbind(df.expanded, Tissue.Category, Total.Cells, Cell.Density..per.megapixel.))
+missing_data$Slide.ID <- word(missing_data$Sample.Name, 1, sep = "_")
+
+
+head(missing_data)
+
+
+
+
+
 # Create a new dataframe for average density
 CS1c[is.na(CS1c$Cell.Density..per.megapixel.)] <- 0
 CS1c$Cell.Density..per.megapixel. <- as.numeric(CS1c$Cell.Density..per.megapixel.)
 output <- data.frame(Combine = character(),
                      Average.cell.Density = double(),
                      stringsAsFactors = FALSE)
+
+
+this <- data.frame(Combine = character(),
+                   num_image = double(),
+                   stringsAsFactors = F)
+
+c <- 1
+for(i in levels(CS1c$uniq)){
+  work <- droplevels(subset(CS1c, uniq == i))
+  these <- nlevels(work$Sample.Name)
+  this[c, "Combine"] <- i
+  this[c, "num_image"] <- these
+  c <- c + 1
+}
+
+
+head(this)
+
 
 c <- 1
 for(i in levels(CS1c$uniq)){
@@ -52,11 +126,60 @@ CS1d$Rank <- rank(CS1d$Average.cell.Density)
 # Paste together Tissue.Category and Phenotype
 CS1d$Parameter <- as.factor(paste("Average Density of ", CS1d$Phenotype, " Positive Cells in the ", CS1d$Tissue.Category, sep = ""))
 levels(CS1d$Parameter)
-Cell_Density_DF <- CS1d
 
-# Write and Read
-## writeCsvO(Cell_Density_DF)
-CS1d <- read.csv("Output/Cell_Density_DF.csv")
+CS1d$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", CS1d$Slide.ID) 
+CS1d$Slide.ID <-trim.trailing(CS1d$Slide.ID)
+
+
+
+clinical <- read.csv("Data/New_Clin.csv")
+
+
+
+
+
+try <- merge(CS1d, clinical, by = "Slide.ID")
+
+
+
+
+
+try1 <- try[, c("Slide.ID", "Average.cell.Density", "Parameter", "grade", "HER2", "ER", "Path.Response")]
+try2 <- spread(try1, key = "Parameter", value = "Average.cell.Density") %>% column_to_rownames(., var = "Slide.ID")
+
+head(try2)
+
+pca1 <- try2 %>% dplyr:: select(-contains("All")) %>% dplyr:: select(-contains("DAPI"))
+pca1[is.na(pca1)] <- 0
+
+View(try2)
+
+
+prin_comp <- prcomp(pca1[, names(pca1) != "grade" & names(pca1) != "HER2" & names(pca1) != "ER" & names(pca1) != "Path.Response"], scale. = T)
+Subtype <- pca1[, "grade"]
+
+library(ggbiplot)
+g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, 
+              groups = Subtype, ellipse = T,
+              circle = T,
+              var.axes = F,
+              choices = c(1,2)
+)
+
+
+g <- g + scale_color_manual(values = cbcols)
+g <- g + theme_bw()
+g <- g + theme(legend.direction = 'horizontal', 
+               legend.position = 'top')
+
+g <- g + ggtitle("PCA of Immune Cell Abundance (Density per Megapixel)")
+ggsave("PCA of Immune Cell Abundance (Density per Mpix).png" , plot = g, device = "png",
+       path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures",
+       height = 6, width = 6, units = 'in', dpi = 600)
+
+
+
+
 
 # Plot
 for(i in levels(CS1d$Parameter)){
@@ -67,7 +190,7 @@ for(i in levels(CS1d$Parameter)){
   temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/Cell_Density/Per_Megapixel/Violin",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Cell_Density",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
@@ -165,7 +288,7 @@ g <- g + theme(legend.direction = 'horizontal',
 
 g <- g + ggtitle("PCA of Immune Cell Abundance (Density per Megapixel)")
 ggsave("PCA of Immune Cell Abundance (Density per Mpix).png" , plot = g, device = "png",
-       path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures",
+       path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures",
        height = 6, width = 6, units = 'in', dpi = 600)
 
 ## Plot Vectors of PCA
@@ -269,7 +392,7 @@ for(i in levels(Normality$uniq)){
     stat_qq(aes(sample = ComponentScore))
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/Cell_Density/PCA/Normality",
+         path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/Cell_Density/PCA/Normality",
          height=5, width=5, units='in', dpi=600)
   }
 
@@ -285,7 +408,7 @@ for(i in levels(PC_CD2$Component)){
   temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
   filen <- paste0(i,".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/jlm650/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/Cell_Density/Per_Megapixel/PCA/PC_Comp",
+         path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/Cell_Density/Per_Megapixel/PCA/PC_Comp",
          height = 5, width = 5, units = 'in', dpi = 600)
 }
 
