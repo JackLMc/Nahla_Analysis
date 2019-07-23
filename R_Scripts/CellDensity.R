@@ -4,6 +4,7 @@ library(tidyverse)
 library(data.table)
 
 # Read data / source("tocsv.R)
+# Reading in data and cleaning up ----
 cell_seg_summary <- read.csv("Output/Summary_data.csv")
 cell_seg_summary$Tissue.Category <- as.factor(cell_seg_summary$Tissue.Category)
 
@@ -48,11 +49,12 @@ head(output)
 
 
 
-#### Check for missing phenotypes from pictures and create dataframe
+# Check for missing phenotypes from pictures and create dataframe ----
 # List missing phenotypes from pictures
 missing_pheno <- list()
 
 for(i in levels(CS1b$Sample.Name)){
+  print(i)
   work <- droplevels(subset(CS1b, Sample.Name == i))
   pat_pheno <- as.character(levels(work$Phenotype))
   all_pheno <- as.character(levels(CS1b$Phenotype))
@@ -85,24 +87,21 @@ CS1c[is.na(CS1c$Cell.Density..per.megapixel.)] <- 0
 CS1c$Cell.Density..per.megapixel. <- as.numeric(CS1c$Cell.Density..per.megapixel.)
 output <- data.frame(Combine = character(),
                      Average.cell.Density = double(),
-                     stringsAsFactors = FALSE)
+                     stringsAsFactors = F)
 
 
-this <- data.frame(Combine = character(),
-                   num_image = double(),
-                   stringsAsFactors = F)
-
-c <- 1
-for(i in levels(CS1c$uniq)){
-  work <- droplevels(subset(CS1c, uniq == i))
-  these <- nlevels(work$Sample.Name)
-  this[c, "Combine"] <- i
-  this[c, "num_image"] <- these
-  c <- c + 1
-}
-
-
-head(this)
+# check <- data.frame(Combine = character(),
+#                    num_image = double(),
+#                    stringsAsFactors = F)
+# 
+# c <- 1
+# for(i in levels(CS1c$uniq)){
+#   work <- droplevels(subset(CS1c, uniq == i))
+#   num_samp <- nlevels(work$Sample.Name)
+#   check[c, "Combine"] <- i
+#   check[c, "num_image"] <- num_samp
+#   c <- c + 1
+# }
 
 
 c <- 1
@@ -128,20 +127,23 @@ CS1d$Parameter <- as.factor(paste("Average Density of ", CS1d$Phenotype, " Posit
 levels(CS1d$Parameter)
 
 CS1d$Slide.ID <- gsub("  5PLEX|5plex Fedor| 5PLEX| breast tumour CD4 CD8 CD20 CD68 FOXP3", "", CS1d$Slide.ID) 
-CS1d$Slide.ID <-trim.trailing(CS1d$Slide.ID)
+CS1d$Slide.ID <- trim.trailing(CS1d$Slide.ID) %>% as.factor()
 
 
+clinical <- read.csv("./Data/Nahla_clinical.csv")
+colnames(clinical)[colnames(clinical) == "Lablels.as.in.inform.cases"] <- "Slide.ID"
+clinical <- droplevels(subset(clinical, Slide.ID != ""))
 
-clinical <- read.csv("Data/New_Clin.csv")
-
-
-
-
-
-try <- merge(CS1d, clinical, by = "Slide.ID")
+nlevels(clinical$Slide.ID)
+nlevels(CS1d$Slide.ID)
 
 
+try <- merge(CS1d, clinical, by = "Slide.ID") %>% droplevels()
+try$Slide.ID <- as.factor(try$Slide.ID)
 
+
+# levels(clinical$Slide.ID)[!('%in%'(levels(clinical$Slide.ID), levels(CS1d$Slide.ID)))]
+# levels(CS1d$Slide.ID)[grep("S073561", levels(CS1d$Slide.ID))]
 
 
 try1 <- try[, c("Slide.ID", "Average.cell.Density", "Parameter", "grade", "HER2", "ER", "Path.Response")]
