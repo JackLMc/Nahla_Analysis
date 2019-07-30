@@ -34,7 +34,9 @@ combined.df <- preprocess_cell_seg(folderoffolders, targetdir, subTdir, origindi
 
 # Write to allow reading
 setwd(origindir)
+write.csv(file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Output/Batch2_single.csv", x = combined.df, row.names = F)
 Batch2_single <- read.csv("Data/Batch2_single.csv")
+
 
 df1 <- clean_merged_cell_seg(Batch2_single)
 Batch2_single <- df1[, c("Slide.ID", "Sample.Name", "Tissue.Category", "Phenotype", "Cell.ID", "Cell.X.Position", "Cell.Y.Position")]

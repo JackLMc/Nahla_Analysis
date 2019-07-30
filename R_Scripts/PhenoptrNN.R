@@ -28,6 +28,9 @@ write.csv(file = "./Output/Batch2_NN.csv", x = NearNeigh1, row.names = F)
 Batch1_NN <- read.csv("Output/Batch1_NN.csv")
 Batch2_NN <- read.csv("Output/Batch2_NN.csv")
 
+rm(NearNeigh)
+rm(NearNeigh1)
+
 # Remove stuff that doesn't matter anymore
 Batch1_NN$tag <- as.character(Batch1_NN$tag)
 Batch2_NN$tag <- as.character(Batch2_NN$tag)
@@ -176,15 +179,27 @@ colnames(clin)[colnames(clin) == "Lablels.as.in.inform.cases"] <- "Slide.ID"
 clin$Slide.ID <- trim.trailing(clin$Slide.ID)
 
 
+name_the_pats <- NN9$Slide.ID
+name_the_pats[!duplicated(name_the_pats)]
+
+
+write.csv(x = name_the_pats, file = "./Output/NAME_THEM.csv")
 
 TSPAN <- read.csv("Data/TSPAN6.csv")
+head(TSPAN)
+colnames(TSPAN)[colnames(TSPAN) == "Number"] <- "Slide.ID"
 TSPAN$Slide.ID <- trim.trailing(TSPAN$Slide.ID)
-TSPAN <- TSPAN[, c("Slide.ID", "Tetraspanin.6.score..membrane.",
-                   "positive.vs.negative.membranous",
-                   "Tetraspanin.6.score.cytoplasm.",
-                   "Tspan.6.cytoplasm")]
+colnames(TSPAN)
 
-# TSPAN$Slide.ID[!('%in%' (TSPAN$Slide.ID, try$Slide.ID))]
+
+# TSPAN <- TSPAN[, c("Slide.ID", "Tetraspanin.6.score..membrane.",
+#                    "positive.vs.negative.membranous",
+#                    "Tetraspanin.6.score.cytoplasm.",
+#                    "Tspan.6.cytoplasm")]
+
+TSPAN$Slide.ID[!('%in%' (TSPAN$Slide.ID, NN9$Slide.ID))]
+
+NN9$Slide.ID[grep("H06", NN9$Slide.ID)]
 
 clin$Slide.ID[!('%in%' (clin$Slide.ID, NN9$Slide.ID))]
 # BRCBX 125006433 not in NN9

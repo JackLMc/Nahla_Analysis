@@ -133,50 +133,44 @@ CS1d$Slide.ID <- trim.trailing(CS1d$Slide.ID) %>% as.factor()
 clinical <- read.csv("./Data/Nahla_clinical.csv")
 colnames(clinical)[colnames(clinical) == "Lablels.as.in.inform.cases"] <- "Slide.ID"
 clinical <- droplevels(subset(clinical, Slide.ID != ""))
+clinical$ER[clinical$ER == "Negative"] <- "negative"
+clinical$HER2[clinical$HER2 == "Positive"] <- "positive"
+clinical$Path.Response[clinical$Path.Response == "pCR"] <- "PCR"
+clinical <- droplevels(clinical)
 
-nlevels(clinical$Slide.ID)
-nlevels(CS1d$Slide.ID)
-
-
-try <- merge(CS1d, clinical, by = "Slide.ID") %>% droplevels()
-try$Slide.ID <- as.factor(try$Slide.ID)
-
+# 
+data_clin <- merge(CS1d, clinical, by = "Slide.ID") %>% droplevels()
+data_clin$Slide.ID <- as.factor(data_clin$Slide.ID)
 
 # levels(clinical$Slide.ID)[!('%in%'(levels(clinical$Slide.ID), levels(CS1d$Slide.ID)))]
 # levels(CS1d$Slide.ID)[grep("S073561", levels(CS1d$Slide.ID))]
+head(data_clin)
 
+data_clin1 <- data_clin[, c("Slide.ID", "Average.cell.Density", "Parameter", "Grade", "HER2", "ER", "Path.Response")]
+data_clin2 <- spread(data_clin1, key = "Parameter", value = "Average.cell.Density") %>% column_to_rownames(., var = "Slide.ID")
 
-try1 <- try[, c("Slide.ID", "Average.cell.Density", "Parameter", "grade", "HER2", "ER", "Path.Response")]
-try2 <- spread(try1, key = "Parameter", value = "Average.cell.Density") %>% column_to_rownames(., var = "Slide.ID")
+head(data_clin2)
 
-head(try2)
-
-pca1 <- try2 %>% dplyr:: select(-contains("All")) %>% dplyr:: select(-contains("DAPI"))
+pca1 <- data_clin2 %>% dplyr:: select(-contains("All")) %>% dplyr:: select(-contains("DAPI"))
 pca1[is.na(pca1)] <- 0
 
-View(try2)
 
+prin_comp <- prcomp(pca1[, names(pca1) != "Grade" & names(pca1) != "HER2" & names(pca1) != "ER" & names(pca1) != "Path.Response"], scale. = T)
+Subtype <- pca1[, "Grade"] %>% as.factor()
 
-prin_comp <- prcomp(pca1[, names(pca1) != "grade" & names(pca1) != "HER2" & names(pca1) != "ER" & names(pca1) != "Path.Response"], scale. = T)
-Subtype <- pca1[, "grade"]
 
 library(ggbiplot)
 g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, 
-              groups = Subtype, ellipse = T,
-              circle = T,
-              var.axes = F,
-              choices = c(1,2)
-)
-
-
-g <- g + scale_color_manual(values = cbcols)
-g <- g + theme_bw()
-g <- g + theme(legend.direction = 'horizontal', 
+         groups = Subtype, ellipse = T,
+         circle = T,
+         var.axes = F,
+         choices = c(1, 2)) +
+  #scale_color_manual(values = cbcols) +
+  theme_bw() + 
+  theme(legend.direction = 'horizontal', 
                legend.position = 'top')
-
-g <- g + ggtitle("PCA of Immune Cell Abundance (Density per Megapixel)")
-ggsave("PCA of Immune Cell Abundance (Density per Mpix).png" , plot = g, device = "png",
-       path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures",
+ggsave("PCA of Immune Cell Abundance (Density per Mpix).pdf" , plot = g, device = "pdf",
+       path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/",
        height = 6, width = 6, units = 'in', dpi = 600)
 
 
@@ -184,326 +178,86 @@ ggsave("PCA of Immune Cell Abundance (Density per Mpix).png" , plot = g, device 
 
 
 # Plot
-for(i in levels(CS1d$Parameter)){
-  print(paste("Working on:", i))
-  Chosen <- droplevels(subset(CS1d, Parameter == i))
-  YTitle <- paste0("Rank of the ", i)
-  MainTitle <- paste0("Violin plot of the ", i)
-  temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Cell_Density",
-         height = 5, width = 5, units = 'in', dpi = 600)
+cbcols <- c("#999999",
+            "#56B4E9",
+            "#E69F00",
+            "#009E73")
+
+data_clin3 <- data_clin2 %>% gather(contains("Positive Cells in the"), key = "Parameter", value = "Average.cell.Density")
+data_clin4 <- factorthese(data_clin3, c("Grade", "HER2", "ER", "Path.Response", "Parameter"))
+
+
+
+for(i in levels(data_clin4$Parameter)){
+  print(i)
+  df <- droplevels(subset(data_clin4, Parameter == i))
+  p <- ggplot(df, aes(x = ER, y = Average.cell.Density)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(ER, fill = ER), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "ER", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/ER",
+         height = 5, width = 5, units = "in")
 }
 
-# Combine stats into a list
-stat_list <- list()
-c <- 1
-for(i in levels(CS1d$Parameter)) {
-  name <- basename(i)
-  cat('Processing', i, '\n')
-  workingon <- droplevels(subset(CS1d, Parameter == i))
-  # assign your ggplot call to the i'th position in the list
-  x <- compare_means(Average.cell.Density ~ Subtype, data = workingon, method = "wilcox.test")
-  y <- as.data.frame(x)
-  stat_list[[i]]  <- cbind(i, y)
-c <- c + 1}
 
-# Bind and remove row names
-z <- do.call(rbind, stat_list)
-rownames(z) <- c()
-
-# Separate
-CellDensity_Megapixel_Stat <- z 
-
-# Write out the statistics
-writeCsvO(CellDensity_Megapixel_Stat)
-
-# Logistic Regression
-CS1e <- CS1d %>% dplyr:: select(-contains("Phenotype")) %>% dplyr:: select(-contains("Tissue.Category")) %>% dplyr:: select(-contains("Rank"))
-LR <- spread(CS1e, "Parameter", "Average.cell.Density")
-LR[is.na(LR)] <- 0
-LR2 <- LR %>% dplyr:: select(-contains("Slide.ID"))
-
-# Using model to predict where hiCIRC patients should lie?
-LR2 <- droplevels(subset(LR2, Subtype != "hiCIRC"))
-
-### Find what is 0 and what is 1
-contrasts(LR2$Subtype)
-
-# Check for collinearity
-corrplot(cor(LR2[,-1]), type = 'lower')
-
-# Remove variables that are likely to be collinear
-LR3 <- LR2 %>% dplyr:: select(-contains("All")) %>% dplyr:: select(-contains("Other"))
-
-# Recheck collinearity
-corrplot(cor(LR3[,-1]), type = 'lower')
-
-# Do model
-model <- glm(Subtype ~., family = binomial (link = 'logit'), data = LR3)
-
-# Investigate model
-summary(model)
-anova(model, test = "Chisq")
-
-## Find R squared
-pR2(model)
-
-# Predict where hiCIRC lie (rename hiCIRC - MSS [what the MSI test says])
-LR2a <- droplevels(subset(LR, Subtype == "hiCIRC"))
-LR2b <- LR2a %>% dplyr:: select(-contains("Subtype"))
-LR2b$Subtype <- 1 # MSS binary
-
-# See how accurately the model assigns hiCIRC to MSS
-fitted.results <- predict(model, newdata = LR2b, type = 'response')
-fitted.results <- ifelse((fitted.results > 0.5), 1, 0)
-misClasificError <- mean(fitted.results != LR2b$Subtype)
-print(paste("Accuracy", 1-misClasificError))
-
-# PCA
-## Spread so Phenotypes are columns
-CS1e <- CS1d %>% dplyr:: select(-contains("Phenotype")) %>% dplyr:: select(-contains("Tissue.Category")) %>% dplyr:: select(-contains("Rank"))
-CS2 <- spread(CS1e, "Parameter", "Average.cell.Density")
-
-### Remove identifiers
-CS3 <- data.frame(CS2[, names(CS2) != "Slide.ID"], row.names = CS2[, names(CS2) == "Slide.ID"])
-pca1 <- CS3 %>% dplyr:: select(-contains("All")) %>% dplyr:: select(-contains("Other"))
-pca1[is.na(pca1)] <- 0
-
-# Measure Collinear variables
-corrplot(cor(pca1), type = 'lower')
-
-### Complete PCA for all parameters
-prin_comp <- prcomp(pca1[, names(pca1) != "Subtype"], scale. = T)
-Subtype <- pca1[, "Subtype"]
-g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, 
-              groups = Subtype, ellipse = T,
-              circle = T,
-              var.axes = F,
-              choices = c(1,2)
-)
-g <- g + scale_color_manual(values = cbcols)
-g <- g + theme_bw()
-g <- g + theme(legend.direction = 'horizontal', 
-               legend.position = 'top')
-
-g <- g + ggtitle("PCA of Immune Cell Abundance (Density per Megapixel)")
-ggsave("PCA of Immune Cell Abundance (Density per Mpix).png" , plot = g, device = "png",
-       path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures",
-       height = 6, width = 6, units = 'in', dpi = 600)
-
-## Plot Vectors of PCA
-theta <- seq(0,2*pi, length.out = 100)
-circle <- data.frame(x = cos(theta), y = sin(theta))
-p <- ggplot(circle,aes(x,y)) + geom_path()
-
-loadings <- data.frame(prin_comp$rotation, 
-                       Parameters = row.names(prin_comp$rotation))
-p + geom_text(data = loadings, 
-              mapping = aes(x = PC1, y = PC2, label = Parameters, colour = Parameters)) +
-  coord_fixed(ratio=1) +
-  labs(x = "PC1", y = "PC2") + theme_bw()
-
-
-# How many PC's are important?
-screeplot(prin_comp)
-fviz_screeplot(prin_comp, ncp = 10, choice = "eigenvalue")
-
-# Find the Eigenvalues
-eig <- (prin_comp$sdev)^2
-
-## Variances in percentage
-variance <- eig*100/sum(eig)
-
-## Cumulative variances
-cumvar <- cumsum(variance)
-
-## Store the variances as a dataframe
-### Write as a DF
-eigenvalues_Cell_Density <- data.frame(eig = eig, variance = variance,
-                      cumvariance = cumvar)
-writeCsvO(eigenvalues_Cell_Density)
-
-# Store the variances
-var <- get_pca_var(prin_comp)
-
-## Find the coordinates of variables
-var$coord[, 1:5]
-
-## Find the correlation between variables and principal components
-loadings <- prin_comp$rotation
-sdev <- prin_comp$sdev
-
-load <- as.data.frame(loadings)
-
-load[order(load$PC14, decreasing = T)[1:10],]
-### Find the correlataions
-var.coord <- t(apply(loadings, 1, var_cor_func, sdev))
-
-## Calculate the Cos2 (square of the coordinates)
-var.cos2 <- var.coord^2
-
-## Contribution of variables to the Components ((cos2) * 100) / (total cos2 of the component)
-comp.cos2 <- apply(var.cos2, 2, sum)
-var.contrib <- t(apply(var.cos2,1, contrib, comp.cos2))
-contrib.var <- as.data.frame(var.contrib)
-
-## Find the most contributing variable
-contrib.var[order(contrib.var$PC14, decreasing = T)[1:10],]
-
-# Use the analysis to compare the values for the groups across PC1-3
-## Store the contribution to each PC
-PC_CD <- as.data.frame(prin_comp$x)
-PC_CD1 <- tibble:: rownames_to_column(PC_CD, "Slide.ID")
-PC_CD1$Slide.ID <- as.factor(PC_CD1$Slide.ID)
-
-## Gather the PCs 
-PC_CD2 <- PC_CD1 %>% gather(contains("PC"), key = Component, value = "ComponentScore")
-PC_CD2$Component <- as.factor(PC_CD2$Component)
-
-# Plot
-## Test for normality
-PC_CD2[grep("dMMR$", PC_CD2$Slide.ID), "Subtype"] <- "MSI"
-PC_CD2[grep("pMMR$", PC_CD2$Slide.ID), "Subtype"] <- "MSS"
-PC_CD2[grep(".*N[ ]S[[:digit:]]{6}$", PC_CD2$Slide.ID), "Subtype"] <- "hiCIRC"
-PC_CD2$Subtype <- as.factor(PC_CD2$Subtype)
-
-Normality <- PC_CD2
-Normality$uniq <- as.factor(paste(Normality$Subtype, Normality$Component, sep = ","))
-
-## Shapiro test
-normal_list <- list()
-c <- 1
-for(i in levels(Normality$uniq)){
-  name <- basename(i)
-  cat('Processing', i, '\n')
-  working <- droplevels(subset(Normality, uniq == i))
-  stat <- shapiro.test(working[,"ComponentScore"])
-  normal <- as.data.frame(stat$p.value)
-  normal_list[[i]] <- cbind(i, normal)
-  c <- c + 1
-}
-z <- do.call(rbind, normal_list)
-rownames(z) <- c()
-
-## QQ plots
-for(i in levels(Normality$uniq)){
-  working <- droplevels(subset(Normality, uniq == i))
-  temp_plot <- ggplot(working) +
-    stat_qq(aes(sample = ComponentScore))
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/Cell_Density/PCA/Normality",
-         height=5, width=5, units='in', dpi=600)
-  }
-
-# Store the components
-PC_CD2$Rank <- rank(PC_CD2$ComponentScore)
-
-for(i in levels(PC_CD2$Component)){
-  name <- basename(i)
-  cat('Processing', i, '\n')
-  Chosen <- droplevels(subset(PC_CD2, Component == i))
-  YTitle <- paste0("Rank of ", i)
-  MainTitle <- paste0("Violin plot of ", i)
-  temp_plot <- ggSubtype(Chosen, YTitle, MainTitle)
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/University_of_Birmingham/PhD/Vectra_MSI_MSS_hiCIRC/Figures/Cell_Density/Per_Megapixel/PCA/PC_Comp",
-         height = 5, width = 5, units = 'in', dpi = 600)
+for(i in levels(data_clin4$Parameter)){
+  print(i)
+  df <- droplevels(subset(data_clin4, Parameter == i))
+  p <- ggplot(df, aes(x = HER2, y = Average.cell.Density)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(HER2, fill = HER2), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "HER2", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
+         height = 5, width = 5, units = "in")
 }
 
-PC_CD2[grep("dMMR$", PC_CD2$Slide.ID), "Subtype"] <- "MSI"
-PC_CD2[grep("pMMR$", PC_CD2$Slide.ID), "Subtype"] <- "MSS"
-PC_CD2[grep(".*N[ ]S[[:digit:]]{6}$", PC_CD2$Slide.ID), "Subtype"] <- "hiCIRC"
-PC_CD2$Subtype <- as.factor(PC_CD2$Subtype)
-
-# Combine stats into a list
-stat_list <- list()
-c <- 1
-for(i in levels(PC_CD2$Component)) {
-  name <- basename(i)
-  cat('Processing', i, '\n')
-  workingon <- droplevels(subset(PC_CD2, Component == i))
-  # assign your ggplot call to the i'th position in the list
-  x <- compare_means(ComponentScore ~ Subtype, data = workingon, method = "wilcox.test")
-  y <- as.data.frame(x)
-  stat_list[[i]]  <- cbind(i, y)
-  c <- c + 1}
-
-# Bind and remove row names
-z <- do.call(rbind, stat_list)
-rownames(z) <- c()
-
-# Separate
-CellDensity_Megapixel_PCAStats <- z
-
-# Write out the statistics
-writeCsvO(CellDensity_Megapixel_PCAStats)
-
-# Completing individual, tissue category PCAs
-pcaEpi <- pca1 %>% dplyr:: select(-contains("Stroma"))
-pcaEpi[is.na(pcaEpi)] <- 0
-
-### Complete PCA for Epithelium
-prin_comp <- prcomp(pcaEpi[, names(pcaEpi) != "Subtype"], scale. = T)
-Subtype <- pcaEpi[, "Subtype"]
-g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1, 
-              groups = Subtype, ellipse = TRUE,
-              circle = T,
-              var.axes = F,
-              choices = c(1,2)
-)
-g <- g + scale_color_manual(values = cbcols)
-g <- g + theme_bw()
-g <- g + theme(legend.direction = 'horizontal', 
-               legend.position = 'top')
-
-g <- g + ggtitle("PCA of Immune Cell Abundance in the Stroma (Density per Megapixel)")
-g
-head(pcaEpi)
+for(i in levels(data_clin4$Parameter)){
+  print(i)
+  df <- droplevels(subset(data_clin4, Parameter == i))
+  p <- ggplot(df, aes(x = Grade, y = Average.cell.Density)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(Grade, fill = Grade), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "Grade", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("1", "2"),
+                                          c("2", "3"),
+                                          c("1", "3")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Grade",
+         height = 5, width = 5, units = "in")
+}
 
 
-
-
-
-# LDA - are they normal?
-head(pca1)
-fac <- pca1
-att1 <- fac %>% dplyr:: select(-contains("Slide.ID")) %>% dplyr:: select(-contains("Other")) #%>% dplyr:: select(-contains("All"))
-
-## Run a PCA
-att1[is.na(att1)] <- 0
-pca <- prcomp(att1[,-1],
-              center = TRUE,
-              scale. = TRUE) 
-
-prop.pca <- pca$sdev^2/sum(pca$sdev^2)
-
-## Use PCA to help make LDA
-r <- lda(Subtype ~ ., 
-         att1, 
-         prior = c(1,1,1)/3)
-
-prop.lda <- r$svd^2/sum(r$svd^2)
-
-plda <- predict(object = r,
-                newdata = att1)
-
-dataset <- data.frame(Type = att1[,"Subtype"],
-                      pca = pca$x, lda = plda$x)
-
-
-p1 <- ggplot(dataset) + geom_point(aes(lda.LD1, lda.LD2, colour = Type), size = 2.5) + 
-  labs(x = paste("LD1 (", percent(prop.lda[1]), ")", sep=""),
-       y = paste("LD2 (", percent(prop.lda[2]), ")", sep="")) + theme_bw()
-
-
-# tsne
-library(Rtsne)
-# tSNE
-head(pca1)
-tsne <- Rtsne(as.matrix(pca1[, names(pca1) != "Subtype"]), dims = 10, perplexity = 8, verbose=TRUE, max_iter = 500)
-plot(tsne$Y, main = "tsne", col = pca1$Subtype, pch = 16,
-     axes = F)
