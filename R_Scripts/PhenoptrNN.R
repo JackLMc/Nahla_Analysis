@@ -170,22 +170,19 @@ library(UsefulFunctions)
 library(tidyverse)
 library(data.table)
 library(phenoptr)
+library(ggpubr)
 
 # Read in data for comparisons
 NN9 <- read.csv("Output/Clean_Nearest_Neighbour.csv")
 clin <- read.csv("Data/Nahla_clinical.csv")
 colnames(clin)[colnames(clin) == "Lablels.as.in.inform.cases"] <- "Slide.ID"
-
 clin$Slide.ID <- trim.trailing(clin$Slide.ID)
+clin <- droplevels(subset(clin, Slide.ID != ""))
+clin$ER[clin$ER == "Negative"] <- "negative"
+clin$HER2[clin$HER2 == "Positive"] <- "positive"
+clin$Path.Response[clin$Path.Response == "pCR"] <- "PCR"
 
-
-name_the_pats <- NN9$Slide.ID
-name_the_pats[!duplicated(name_the_pats)]
-
-
-write.csv(x = name_the_pats, file = "./Output/NAME_THEM.csv")
-
-TSPAN <- read.csv("Data/TSPAN6.csv")
+TSPAN <- read.csv("Data/TSPAN6_July.csv")
 head(TSPAN)
 colnames(TSPAN)[colnames(TSPAN) == "Number"] <- "Slide.ID"
 TSPAN$Slide.ID <- trim.trailing(TSPAN$Slide.ID)
@@ -197,17 +194,13 @@ colnames(TSPAN)
 #                    "Tetraspanin.6.score.cytoplasm.",
 #                    "Tspan.6.cytoplasm")]
 
-TSPAN$Slide.ID[!('%in%' (TSPAN$Slide.ID, NN9$Slide.ID))]
-
-NN9$Slide.ID[grep("H06", NN9$Slide.ID)]
-
-clin$Slide.ID[!('%in%' (clin$Slide.ID, NN9$Slide.ID))]
-# BRCBX 125006433 not in NN9
 
 # Merge with Clinical data
 NN10 <- droplevels(merge(NN9, clin, by = "Slide.ID"))
 length(NN10$Slide.ID)
 length(NN9$Slide.ID)
+length(clin$Slide.ID)
+
 
 #
 library(tidyverse)
@@ -215,22 +208,30 @@ NN11 <- NN10 %>% gather(contains("Distance.To"), key = "Parameter", value = "Dis
 NN11$Parameter <- as.factor(NN11$Parameter)
 NN12 <- na.omit(NN11)
 
-my_comparisons <- list(c("negative", "positive"))
+cbcols <- c("#999999", "#56B4E9", "#E69F00", "#009E73")
 
-## ER
+
 for(i in levels(NN12$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = ER, y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2)
-  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
-                       label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/ER",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN12, Parameter == i))
+  p <- ggplot(df, aes(x = ER, y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(ER, fill = ER), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "ER", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/ER",
+         height = 5, width = 5, units = "in")
 }
 
 ER <- list()
@@ -243,25 +244,32 @@ for(i in levels(NN12$Parameter)){
 ER1 = do.call(rbind, ER)
 ER1$id <- rep(names(ER), sapply(ER, nrow))
 
-write.csv(ER1, file = "./Output/Stats/ER_stats.csv", row.names = F)
+write.csv(ER1, file = "./Figures/Nearest_Neighbour/Stats/ER_stats.csv", row.names = F)
 
 
 ## HER2
 for(i in levels(NN12$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = HER2, y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2) 
-  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
-                                      label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN12, Parameter == i))
+  p <- ggplot(df, aes(x = HER2, y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(HER2, fill = HER2), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "HER2", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/HER2",
+         height = 5, width = 5, units = "in")
 }
-
 
 HER2 <- list()
 for(i in levels(NN12$Parameter)){
@@ -273,56 +281,76 @@ for(i in levels(NN12$Parameter)){
 HER2a = do.call(rbind, HER2)
 
 HER2a$id <- rep(names(HER2), sapply(HER2, nrow))
-write.csv(HER2a, file = "./Output/Stats/HER2_stats.csv", row.names = F)
+write.csv(HER2a, file = "./Figures/Nearest_Neighbour/Stats/HER2_stats.csv", row.names = F)
 
 
 ## grade
+NN12$Grade <- as.factor(NN12$Grade)
+
 for(i in levels(NN12$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = grade, y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2) 
-  temp_plot <- y + stat_compare_means(comparisons = list(c("1", "2"),
-                                                         c("1", "3"),
-                                                         c("2", "3")),
-                                      label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/grade",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN12, Parameter == i))
+  p <- ggplot(df, aes(x = Grade, y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(Grade, fill = Grade), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "Grade", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("1", "2"),
+                                          c("2", "3"),
+                                          c("1", "3")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/Grade",
+         height = 5, width = 5, units = "in")
 }
 
 grade <- list()
 for(i in levels(NN12$Parameter)){
   print(i)
   work <- droplevels(subset(NN12, Parameter == i))
-  x <- compare_means(Distance ~ grade, data = work, method = "wilcox.test")
+  x <- compare_means(Distance ~ Grade, data = work, method = "wilcox.test")
   grade[[i]] <- x
 }
 grade1 = do.call(rbind, grade)
 grade1$id <- rep(names(grade), sapply(grade, nrow))
 
-write.csv(grade1, file = "./Output/Stats/grade_stats.csv", row.names = F)
+write.csv(grade1, file = "./Figures/Nearest_Neighbour/Stats/grade_stats.csv", row.names = F)
 
 
 ## Path Response
+levels(NN12$Path.Response)
+
 for(i in levels(NN12$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = Path.Response, y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2) 
-  temp_plot <- y + stat_compare_means(comparisons = list(c("CPR", "PPR"),
-                                                         c("CPR", "no"),
-                                                         c("PPR", "no")),
-                                      label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Path.Response",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN12, Parameter == i))
+  p <- ggplot(df, aes(x = Path.Response, y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(Path.Response, fill = Path.Response), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "Path.Response", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("no", "PCR"),
+                                          c("PCR", "PPR"),
+                                          c("no", "PPR")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/Path.Response",
+         height = 5, width = 5, units = "in")
 }
 
 PResp <- list()
@@ -335,7 +363,7 @@ for(i in levels(NN12$Parameter)){
 PResp1 = do.call(rbind, PResp)
 PResp1$id <- rep(names(PResp), sapply(PResp, nrow))
 
-write.csv(PResp1, file = "./Output/Stats/PResp_stats.csv", row.names = F)
+write.csv(PResp1, file = "./Figures/Nearest_Neighbour/Stats/PResp_stats.csv", row.names = F)
 
 # Survival analysis
 library(survival)
