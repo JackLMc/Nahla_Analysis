@@ -182,19 +182,6 @@ clin$ER[clin$ER == "Negative"] <- "negative"
 clin$HER2[clin$HER2 == "Positive"] <- "positive"
 clin$Path.Response[clin$Path.Response == "pCR"] <- "PCR"
 
-TSPAN <- read.csv("Data/TSPAN6_July.csv")
-head(TSPAN)
-colnames(TSPAN)[colnames(TSPAN) == "Number"] <- "Slide.ID"
-TSPAN$Slide.ID <- trim.trailing(TSPAN$Slide.ID)
-colnames(TSPAN)
-
-
-# TSPAN <- TSPAN[, c("Slide.ID", "Tetraspanin.6.score..membrane.",
-#                    "positive.vs.negative.membranous",
-#                    "Tetraspanin.6.score.cytoplasm.",
-#                    "Tspan.6.cytoplasm")]
-
-
 # Merge with Clinical data
 NN10 <- droplevels(merge(NN9, clin, by = "Slide.ID"))
 length(NN10$Slide.ID)
@@ -365,6 +352,8 @@ PResp1$id <- rep(names(PResp), sapply(PResp, nrow))
 
 write.csv(PResp1, file = "./Figures/Nearest_Neighbour/Stats/PResp_stats.csv", row.names = F)
 
+# ------------------------------------------------------------------------------------------
+
 # Survival analysis
 library(survival)
 library(survminer)
@@ -373,46 +362,66 @@ NN12$OS_STATUS <- ifelse((NN12$Dead == "alive"), T, F)
 
 for(i in levels(NN12$Parameter)){
   print(i)
-  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Survival/")
+  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/Survival/")
   working <- droplevels(subset(NN12, Parameter == i))
   med <- median(working$Distance)
   working$Category <- ifelse((working$Distance >= med), "High", "Low")
-  os.surv.fit <- survfit(Surv(survival, OS_STATUS) ~ Category,
+  os.surv.fit <- survfit(Surv(survival.in.months, OS_STATUS) ~ Category,
                          data = working)
-  filen <- paste0(i,".png")
-  png(filen, width = 480, height = 480)
+  filen <- paste0(i, ".pdf")
+  pdf(filen, height = 6, width = 6)
   print(ggsurvplot(os.surv.fit, data = working, risk.table = F, pval = T))
   dev.off()
 }
 
+# ------------------------------------------------------------------------------------------
+
 
 # TSPAN analysis
-TSPAN <- read.csv("Data/TSPAN6.csv")
+TSPAN <- read.csv("Data/TSPAN6_July.csv")
+colnames(TSPAN)[colnames(TSPAN) == "Number"] <- "Slide.ID"
 TSPAN$Slide.ID <- trim.trailing(TSPAN$Slide.ID)
-TSPAN <- TSPAN[, c(1, 22:25)]
-# TSPAN$Slide.ID[!('%in%' (TSPAN$Slide.ID, try$Slide.ID))]
 
-NN10 <- droplevels(merge(NN9, TSPAN, by = "Slide.ID"))
-length(NN10$Slide.ID)
+TSPAN <- TSPAN[, c("Slide.ID", "Tetraspanin.6..membrane.",
+                   "Tetraspanin.6..cytoplasm.",
+                   "TSpan6.Pos.vs.Neg..memb.", "TSpan6.POS.vs.Neg..Cyt.")]
+
+NN_Ts <- droplevels(merge(NN9, TSPAN, by = "Slide.ID"))
+length(NN_Ts$Slide.ID)
 length(NN9$Slide.ID)
 
 #
 library(tidyverse)
-NN11 <- NN10 %>% gather(contains("Distance.To"), key = "Parameter", value = "Distance")
-head(NN11)
+NN_Ts1 <- NN_Ts %>% gather(contains("Distance.To"), key = "Parameter", value = "Distance")
+head(NN_Ts1)
 
-NN11$Parameter <- as.factor(NN11$Parameter)
+NN_Ts1$Parameter <- as.factor(NN_Ts1$Parameter)
 
-head(NN11)
-# NN_impute <- rfImpute(ER + HER2 + Path.Response ~ ., NN11)
-# View(NN11)
+head(NN_Ts1)
+# NN_impute <- rfImpute(ER + HER2 + Path.Response ~ ., NN_Ts1)
+# View(NN_Ts1)
 
-NN12 <- na.omit(NN11)
+NN_Ts2 <- na.omit(NN_Ts1)
+
+NN_Ts2 <- factorthese(NN_Ts2, c("Tetraspanin.6..membrane.",
+                                "Tetraspanin.6..cytoplasm.",
+                                "TSpan6.Pos.vs.Neg..memb.", "TSpan6.POS.vs.Neg..Cyt."))
+
+
+NN_Ts2$TSpan6.Pos.vs.Neg..memb. <- tolower(NN_Ts2$TSpan6.Pos.vs.Neg..memb.)
+NN_Ts2$TSpan6.POS.vs.Neg..Cyt. <- tolower(NN_Ts2$TSpan6.POS.vs.Neg..Cyt.)
+
+
+levels(NN_Ts2$Tetraspanin.6..membrane.)
+levels(NN_Ts2$Tetraspanin.6..cytoplasm.)
+levels(NN_Ts2$TSpan6.Pos.vs.Neg..memb.)
+levels(NN_Ts2$TSpan6.POS.vs.Neg..Cyt.)
+
 
 my_comparisons <- list(c("negative", "positive"))
 
 library(ggpubr)
-y <- ggplot(NN12, aes(x = positive.vs.negative.membranous, y = Distance)) +
+y <- ggplot(NN_Ts2, aes(x = TSpan6.Pos.vs.Neg..memb., y = Distance)) +
   geom_boxplot(
     alpha = 0.5,
     width = 0.2)
@@ -422,32 +431,40 @@ temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
 
 ## TSPAN
 ### Membrane
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = positive.vs.negative.membranous, y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2)
-  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
-                                      label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/pos_neg",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN_Ts2, Parameter == i))
+  p <- ggplot(df, aes(x = TSpan6.Pos.vs.Neg..memb., y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(TSpan6.Pos.vs.Neg..memb., fill = TSpan6.Pos.vs.Neg..memb.), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "TSpan6.Pos.vs.Neg..memb.", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_mem/pos_neg/",
+         height = 5, width = 5, units = "in")
 }
 
 TSPAN <- list()
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  work <- droplevels(subset(NN12, Parameter == i))
-  x <- compare_means(Distance ~ positive.vs.negative.membranous, data = work, method = "wilcox.test")
+  work <- droplevels(subset(NN_Ts2, Parameter == i))
+  x <- compare_means(Distance ~ TSpan6.Pos.vs.Neg..memb., data = work, method = "wilcox.test")
   TSPAN[[i]] <- x
 }
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_membrane_stats.csv", row.names = F)
+write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/TSPAN_membrane_PN_stats.csv", row.names = F)
 
 #### Score
 my_comparisons <- list(c("0", "1"),
@@ -457,99 +474,113 @@ my_comparisons <- list(c("0", "1"),
                        c("1", "3"),
                        c("2", "3"))
 
-NN12$Tetraspanin.6.score..membrane. <- as.factor(NN12$Tetraspanin.6.score..membrane.)
+NN_Ts2$Tetraspanin.6..membrane. <- as.factor(NN_Ts2$Tetraspanin.6..membrane.)
 
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = Tetraspanin.6.score..membrane., y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2)
-  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
-                                      label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Membrane/score",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN_Ts2, Parameter == i))
+  p <- ggplot(df, aes(x = Tetraspanin.6..membrane., y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(Tetraspanin.6..membrane., fill = Tetraspanin.6..membrane.), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "Tetraspanin.6..membrane.", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3"),
+                                          c("1", "2"), c("1", "3"), c("2", "3")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_mem/score/",
+         height = 5, width = 5, units = "in")
 }
 
 TSPAN <- list()
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  work <- droplevels(subset(NN12, Parameter == i))
-  x <- compare_means(Distance ~ Tetraspanin.6.score..membrane., data = work, method = "wilcox.test")
+  work <- droplevels(subset(NN_Ts2, Parameter == i))
+  x <- compare_means(Distance ~ Tetraspanin.6..membrane., data = work, method = "wilcox.test")
   TSPAN[[i]] <- x
 }
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_membrane_score_stats.csv", row.names = F)
-
-
-head(NN12)
+write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/TSPAN_membrane_score_stats.csv", row.names = F)
 
 ### Cytoplasm
-my_comparisons <- list(c("negative", "positive"))
-
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = Tspan.6.cytoplasm, y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2)
-  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
-                                      label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/pos_neg",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN_Ts2, Parameter == i))
+  p <- ggplot(df, aes(x = TSpan6.POS.vs.Neg..Cyt., y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(TSpan6.POS.vs.Neg..Cyt., fill = TSpan6.POS.vs.Neg..Cyt.), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "TSpan6.POS.vs.Neg..Cyt.", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_cyto/pos_neg/",
+         height = 5, width = 5, units = "in")
 }
 
+
 TSPAN <- list()
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  work <- droplevels(subset(NN12, Parameter == i))
-  x <- compare_means(Distance ~ Tspan.6.cytoplasm, data = work, method = "wilcox.test")
+  work <- droplevels(subset(NN_Ts2, Parameter == i))
+  x <- compare_means(Distance ~ TSpan6.POS.vs.Neg..Cyt., data = work, method = "wilcox.test")
   TSPAN[[i]] <- x
 }
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_cytoplasm_stats.csv", row.names = F)
+write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/TSPAN_cytoplasm_PN_stats.csv", row.names = F)
 
 #### Score
-range(NN12$Tetraspanin.6.score.cytoplasm.)
-my_comparisons <- list(c("0", "1"),
-                       c("0", "2"),
-                       c("0", "3"),
-                       c("1", "2"),
-                       c("1", "3"),
-                       c("2", "3"))
+NN_Ts2$Tetraspanin.6..cytoplasm. <- as.factor(NN_Ts2$Tetraspanin.6..cytoplasm.)
 
-NN12$Tetraspanin.6.score.cytoplasm. <- as.factor(NN12$Tetraspanin.6.score.cytoplasm.)
-
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  working <- droplevels(subset(NN12, Parameter == i))
-  y <- ggplot(working, aes(x = Tetraspanin.6.score.cytoplasm., y = Distance)) +
-    geom_boxplot(
-      alpha = 0.5,
-      width = 0.2)
-  temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
-                                      label = "p.signif")
-  filen <- paste0(i,".png")
-  ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/TSPAN/Cytoplasm/score",
-         height = 5, width = 5, units = "in", dpi = 600)
+  df <- droplevels(subset(NN_Ts2, Parameter == i))
+  p <- ggplot(df, aes(x = Tetraspanin.6..cytoplasm., y = Distance)) +
+    geom_boxplot(alpha = 0.5, width = 0.2) +
+    geom_violin(aes(Tetraspanin.6..cytoplasm., fill = Tetraspanin.6..cytoplasm.), scale = "width", alpha = 0.8) +
+    scale_fill_manual(values = cbcols) + labs(x = "Tetraspanin.6..cytoplasm.", y = i) +
+    geom_dotplot(binaxis = "y",
+                 method = "histodot",
+                 stackdir = "center",
+                 binwidth = 20,
+                 position = position_jitter(0.1),
+                 alpha = 0,
+                 dotsize = 0.4)+
+    theme_bw()+
+    theme(axis.text = element_text(size = 16)) +
+    stat_compare_means(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3"),
+                                          c("1", "2"), c("1", "3"), c("2", "3")), label = "p.signif")
+  filen <- paste0(i,".pdf")
+  ggsave(filen, plot = p, device = "pdf",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_cyto/score/",
+         height = 5, width = 5, units = "in")
 }
 
 TSPAN <- list()
-for(i in levels(NN12$Parameter)){
+for(i in levels(NN_Ts2$Parameter)){
   print(i)
-  work <- droplevels(subset(NN12, Parameter == i))
-  x <- compare_means(Distance ~ Tetraspanin.6.score.cytoplasm., data = work, method = "wilcox.test")
+  work <- droplevels(subset(NN_Ts2, Parameter == i))
+  x <- compare_means(Distance ~ Tetraspanin.6..cytoplasm., data = work, method = "wilcox.test")
   TSPAN[[i]] <- x
 }
 TSPAN1 = do.call(rbind, TSPAN)
