@@ -170,7 +170,7 @@ g <- ggbiplot(prin_comp, obs.scale = 1, var.scale = 1,
   theme(legend.direction = 'horizontal', 
                legend.position = 'top')
 ggsave("PCA of Immune Cell Abundance (Density per Mpix).pdf" , plot = g, device = "pdf",
-       path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/",
+       path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Cell_Density/",
        height = 6, width = 6, units = 'in', dpi = 600)
 
 
@@ -207,7 +207,7 @@ for(i in levels(data_clin4$Parameter)){
     stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
   filen <- paste0(i,".pdf")
   ggsave(filen, plot = p, device = "pdf",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/ER",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Cell_Density/ER",
          height = 5, width = 5, units = "in")
 }
 
@@ -231,7 +231,7 @@ for(i in levels(data_clin4$Parameter)){
     stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
   filen <- paste0(i,".pdf")
   ggsave(filen, plot = p, device = "pdf",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/HER2",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Cell_Density/HER2",
          height = 5, width = 5, units = "in")
 }
 
@@ -256,7 +256,7 @@ for(i in levels(data_clin4$Parameter)){
                                           c("1", "3")), label = "p.signif")
   filen <- paste0(i,".pdf")
   ggsave(filen, plot = p, device = "pdf",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Grade",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Cell_Density/Grade",
          height = 5, width = 5, units = "in")
 }
 
