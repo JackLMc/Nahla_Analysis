@@ -418,17 +418,6 @@ levels(NN_Ts2$TSpan6.Pos.vs.Neg..memb.)
 levels(NN_Ts2$TSpan6.POS.vs.Neg..Cyt.)
 
 
-my_comparisons <- list(c("negative", "positive"))
-
-library(ggpubr)
-y <- ggplot(NN_Ts2, aes(x = TSpan6.Pos.vs.Neg..memb., y = Distance)) +
-  geom_boxplot(
-    alpha = 0.5,
-    width = 0.2)
-temp_plot <- y + stat_compare_means(comparisons = my_comparisons,
-                                    label = "p.signif")
-
-
 ## TSPAN
 ### Membrane
 for(i in levels(NN_Ts2$Parameter)){
@@ -586,7 +575,7 @@ for(i in levels(NN_Ts2$Parameter)){
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Output/Stats/TSPAN_cytoplasm_score_stats.csv", row.names = F)
+write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/TSPAN_cytoplasm_score_stats.csv", row.names = F)
 
 
 
