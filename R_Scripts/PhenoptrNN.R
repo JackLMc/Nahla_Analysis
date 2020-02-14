@@ -174,6 +174,8 @@ library(ggpubr)
 
 # Read in data for comparisons
 NN9 <- read.csv("Output/Clean_Nearest_Neighbour.csv")
+
+
 clin <- read.csv("Data/Nahla_clinical.csv")
 colnames(clin)[colnames(clin) == "Lablels.as.in.inform.cases"] <- "Slide.ID"
 clin$Slide.ID <- trim.trailing(clin$Slide.ID)
@@ -378,7 +380,7 @@ for(i in levels(NN12$Parameter)){
 
 
 # TSPAN analysis
-TSPAN <- read.csv("Data/TSPAN6_July.csv")
+TSPAN <- read.csv("Data/TSpan6_12_02.csv")
 colnames(TSPAN)[colnames(TSPAN) == "Number"] <- "Slide.ID"
 TSPAN$Slide.ID <- trim.trailing(TSPAN$Slide.ID)
 
@@ -408,8 +410,8 @@ NN_Ts2 <- factorthese(NN_Ts2, c("Tetraspanin.6..membrane.",
                                 "TSpan6.Pos.vs.Neg..memb.", "TSpan6.POS.vs.Neg..Cyt."))
 
 
-NN_Ts2$TSpan6.Pos.vs.Neg..memb. <- tolower(NN_Ts2$TSpan6.Pos.vs.Neg..memb.)
-NN_Ts2$TSpan6.POS.vs.Neg..Cyt. <- tolower(NN_Ts2$TSpan6.POS.vs.Neg..Cyt.)
+NN_Ts2$TSpan6.Pos.vs.Neg..memb. <- tolower(NN_Ts2$TSpan6.Pos.vs.Neg..memb.) %>% as.factor()
+NN_Ts2$TSpan6.POS.vs.Neg..Cyt. <- tolower(NN_Ts2$TSpan6.POS.vs.Neg..Cyt.) %>% as.factor()
 
 
 levels(NN_Ts2$Tetraspanin.6..membrane.)
@@ -420,6 +422,7 @@ levels(NN_Ts2$TSpan6.POS.vs.Neg..Cyt.)
 
 ## TSPAN
 ### Membrane
+library(ggpubr)
 for(i in levels(NN_Ts2$Parameter)){
   print(i)
   df <- droplevels(subset(NN_Ts2, Parameter == i))
@@ -439,7 +442,7 @@ for(i in levels(NN_Ts2$Parameter)){
     stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
   filen <- paste0(i,".pdf")
   ggsave(filen, plot = p, device = "pdf",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_mem/pos_neg/",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_mem/pos_neg/14_02/",
          height = 5, width = 5, units = "in")
 }
 
@@ -453,7 +456,7 @@ for(i in levels(NN_Ts2$Parameter)){
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/TSPAN_membrane_PN_stats.csv", row.names = F)
+write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/14_02/TSPAN_membrane_PN_stats.csv", row.names = F)
 
 #### Score
 my_comparisons <- list(c("0", "1"),
@@ -521,7 +524,7 @@ for(i in levels(NN_Ts2$Parameter)){
     stat_compare_means(comparisons = list(c("negative", "positive")), label = "p.signif")
   filen <- paste0(i,".pdf")
   ggsave(filen, plot = p, device = "pdf",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_cyto/pos_neg/",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/5_Extra/Nahla_Analysis/Figures/Nearest_Neighbour/TSPAN_cyto/pos_neg/14_02/",
          height = 5, width = 5, units = "in")
 }
 
@@ -536,7 +539,7 @@ for(i in levels(NN_Ts2$Parameter)){
 TSPAN1 = do.call(rbind, TSPAN)
 TSPAN1$id <- rep(names(TSPAN), sapply(TSPAN, nrow))
 
-write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/TSPAN_cytoplasm_PN_stats.csv", row.names = F)
+write.csv(TSPAN1, file = "./Figures/Nearest_Neighbour/Stats/14_02/TSPAN_cytoplasm_PN_stats.csv", row.names = F)
 
 #### Score
 NN_Ts2$Tetraspanin.6..cytoplasm. <- as.factor(NN_Ts2$Tetraspanin.6..cytoplasm.)
